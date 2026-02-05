@@ -3,13 +3,14 @@
 
 #%%imports
 import bpy
+import bmesh
 
 import importlib
 import logging
 import numpy as np
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 from . import utils
 
@@ -102,8 +103,18 @@ class Network:
         for n in range(self.n_neurons):
             #instantiate new neuron based on `template_obj`
             neuron_idx = f"Neuron.{n:04d}"
+            
+            #generation (non-linked copy)
+            neuron_obj = template_obj.copy()
+            neuron_obj.name = neuron_idx            
+            neuron_obj.data = template_obj.data.copy()
+            neuron_obj.data.name = neuron_idx
+            neuron_obj.location = self.coords[n]
+            
+            """#instanciation
             neuron_obj = bpy.data.objects.new(neuron_idx, template_obj.data)
             neuron_obj.location = self.coords[n]
+            """
             
             #copy geonodes
             utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
@@ -116,18 +127,11 @@ class Network:
         
         return
     
-    def draw_synapses(self,
-        collection:bpy.types.Collection=None,    
+    def draw_axons(self,
         ):
         """draws synapses into the scene
         """
         
-        #default params
-        if collection is None:
-            self.synapse_collection = utils.collection_utils.ensure_collection("Synapses", self.bsnn_collection)
-        else:
-            self.synapse_collection = collection
-                    
         #create synapses
         for s in range(self.n_synapses):
             #synapse parameters
@@ -136,32 +140,47 @@ class Network:
             pre_neuron = bpy.data.objects.get(f"Neuron.{synapse[0]:04.0f}")
             post_neuron = bpy.data.objects.get(f"Neuron.{synapse[1]:04.0f}")          
 
-            #generate mesh
-            synapse_mesh = bpy.data.meshes.new(synapse_idx)
-            synapse_mesh.from_pydata(
-                [pre_neuron.matrix_world.translation, post_neuron.matrix_world.translation],    #use global translation to ensure vertecies are exactly at neuron positions
-                [(0,1)],
-                [],
-            )
-            synapse_mesh.update()
-            
-            #link mesh to 
-            synapse_obj = bpy.data.objects.new(synapse_idx, synapse_mesh)
-            
-            #unlink from all current collections
-            utils.collection_utils.obj_unlink_all_collections(synapse_obj)
+            #select neuron to manipulate (pre = root of axon)
+            bpy.ops.object.select_all(action='DESELECT')
+            pre_neuron.select_set(True)
+            bpy.context.view_layer.objects.active = pre_neuron
 
-            #add to synapse collection            
-            self.synapse_collection.objects.link(synapse_obj)        
+            #get most-aligned vertex
+            offset = post_neuron.matrix_world.translation - pre_neuron.matrix_world.translation
+            direction = offset.normalized()
             
+            best_v_idx = None
+            best_score = 1e-20
+            for idx, v in enumerate(pre_neuron.data.vertices):
+                vec = v.co - pre_neuron.location
+                score = vec.dot(direction)
+                if score > best_score:
+                    best_score = score
+                    best_v_idx = idx
+                    
+            if best_v_idx is None:
+                logger.debug("TODO: autapse (self-connection)")
+                #TODO: self connection
+                continue
+            
+            
+            #extrude vertex
+            mesh = pre_neuron.data
+            mesh.vertices.add(1)
+            v_post_idx = len(mesh.vertices) - 1
+            v_post = mesh.vertices[v_post_idx]
+            v_post.co += offset
+            mesh.edges.add(1)
+            mesh.edges[-1].vertices = (best_v_idx, v_post_idx)
+            
+            """TODO
             #add hook modifer (to link synapse start and end to neuron positions)
-            for i, neuron_obj in enumerate([pre_neuron, post_neuron]):
-                mod = synapse_obj.modifiers.new(f"Hook_{synapse_obj.name}.{i:03d}", 'HOOK')
-                mod.object = neuron_obj             #set parent
-                mod.vertex_indices_set([i])         #set influenced vertecies
-                #mod.center = neuron_obj.location
-                mod.center = synapse_obj.matrix_world.inverted() @ neuron_obj.matrix_world.translation
-                
+            mod = pre_neuron.modifiers.new(f"Hook_{pre_neuron.name}.{s:03d}", 'HOOK')
+            mod.object = post_neuron                #set parent
+            mod.vertex_indices_set([v_post_idx])    #set influenced vertices
+            #mod.center = neuron_obj.location
+            mod.center = pre_neuron.matrix_world.inverted() @ post_neuron.matrix_world.translation
+            """
             
         return
 

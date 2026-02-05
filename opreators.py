@@ -50,7 +50,7 @@ class BSNN_OT_build(bpy.types.Operator):
         Net.draw_neurons(
             template_obj=bpy.context.scene.template_neuron
         )
-        Net.draw_synapses()
+        Net.draw_axons()
         
         return {'FINISHED'}
 
