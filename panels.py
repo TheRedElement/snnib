@@ -25,21 +25,28 @@ class BSNN_PT_Panel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-
+        scene = context.scene
+        
+        #global header        
         layout.label(text="Generate a Spiking Neural Network")
 
-        layout.separator()
-
-        col = layout.column(align=True)
-        #col.operator("wm.open_mainfile", text="Open File")
-        scene = context.scene
-        col.prop(scene, "template_neuron", text="Template Neuron")
-        
-        layout.separator()
-
+        #sections
+        layout.row().label(text="Random network")
+        sec = layout.row()
+        sec.column().prop(scene, "template_neuron", text="Template neuron")
         row = layout.row()
-        row.operator("operator.bsnn_build")
-
+        row.column().prop(context.scene.bsnn_props, "n_neurons")
+        row.column().prop(context.scene.bsnn_props, "p_synapses")
+        layout.separator()        
+        
+        layout.row().label(text="Network from file")
+        layout.separator()
+        
+        
+        layout.row().label(text="Actions")
+        sec = layout.row()
+        sec.column(align=True).operator("operator.bsnn_build")
+        
 
 #%%registration
 classes = (

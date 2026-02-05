@@ -58,12 +58,14 @@ from . import (
     geo_nodes,
     opreators,
     panels,
+    properties,
 )
 modules = (
     blend_snn,
     geo_nodes,
     opreators,
     panels,
+    properties,
 )
 
 ignore_modules = (geo_nodes,)

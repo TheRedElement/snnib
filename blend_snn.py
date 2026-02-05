@@ -21,7 +21,6 @@ class Network:
     
     def __init__(self,
         bsnn_collection:bpy.types.Collection,
-        times:np.ndarray,
         coords:np.ndarray,
         synapses:np.ndarray,
         ):
@@ -62,7 +61,6 @@ class Network:
         """
             
         self.bsnn_collection = bsnn_collection
-        self.times = times
         self.coords = coords
         self.synapses = synapses
         
