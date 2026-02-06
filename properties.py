@@ -1,10 +1,9 @@
 #%%imports
 import bpy
 
-import numpy as np
 
 #%%definitions
-class BsnnProperties(bpy.types.PropertyGroup):
+class SnnibProperties(bpy.types.PropertyGroup):
     """custom properties used in the UI
     """
     
@@ -28,13 +27,13 @@ class BsnnProperties(bpy.types.PropertyGroup):
 
 #%%registring
 classes = (
-    BsnnProperties,
+    SnnibProperties,
 )
 
 def register():
-    bpy.utils.register_class(BsnnProperties)
-    bpy.types.Scene.bsnn_props = bpy.props.PointerProperty(type=BsnnProperties)    
+    bpy.utils.register_class(SnnibProperties)
+    bpy.types.Scene.snnib_props = bpy.props.PointerProperty(type=SnnibProperties)    
 
 def unregister():
-    bpy.utils.unregister_class(BsnnProperties)
-    del bpy.types.Scene.bsnn_props
+    bpy.utils.unregister_class(SnnibProperties)
+    del bpy.types.Scene.snnib_props

@@ -12,26 +12,26 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 from . import utils
-from . import blend_snn
+from . import network
 
 #%%definitions
-class BSNN_OT_build(bpy.types.Operator):
+class SNNIB_OT_build(bpy.types.Operator):
     """operator to build a SNN
     """
-    bl_idname = "operator.bsnn_build"
+    bl_idname = "operator.snnib_build"
     bl_label = "Build SNN"
 
     def execute(self, context):
         
         #get collection
-        bsnn_collection = utils.collection_utils.ensure_collection("BSNN")
-        utils.collection_utils.clear_collection(bsnn_collection)   #make sure collection is clean for testing
+        snnib_collection = utils.collection_utils.ensure_collection("SNNIB")
+        utils.collection_utils.clear_collection(snnib_collection)   #make sure collection is clean for testing
         
         #init network
         coords = None
         synapses = None
-        Net = blend_snn.Network(
-            bsnn_collection=bsnn_collection,
+        Net = network.Network(
+            snnib_collection=snnib_collection,
             coords=coords,
             synapses=synapses,
         )
@@ -46,7 +46,7 @@ class BSNN_OT_build(bpy.types.Operator):
 
 #%%registration
 classes = (
-    BSNN_OT_build,
+    SNNIB_OT_build,
 )
 
 def register():

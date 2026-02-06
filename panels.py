@@ -11,14 +11,13 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 from . import bl_info
-# from blend_snn import bl_info
 
 #%%definitions
-class BSNN_PT_Panel(bpy.types.Panel):
+class SNNIB_PT_Panel(bpy.types.Panel):
     """panel hosting the add-on
     """
     bl_label = bl_info["name"]
-    bl_idname = "panel.bsnn"
+    bl_idname = "panel.snnib"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = bl_info["name"]
@@ -32,12 +31,12 @@ class BSNN_PT_Panel(bpy.types.Panel):
 
         #sections
         layout.row().label(text="Random network")
-        layout.row().prop(context.scene.bsnn_props, "seed")
+        layout.row().prop(context.scene.snnib_props, "seed")
         sec = layout.row()
         sec.column().prop(scene, "template_neuron", text="Template neuron")
         row = layout.row()
-        row.column().prop(context.scene.bsnn_props, "n_neurons")
-        row.column().prop(context.scene.bsnn_props, "p_synapses")
+        row.column().prop(context.scene.snnib_props, "n_neurons")
+        row.column().prop(context.scene.snnib_props, "p_synapses")
         layout.separator()        
         
         layout.row().label(text="Network from file")
@@ -46,12 +45,12 @@ class BSNN_PT_Panel(bpy.types.Panel):
         
         layout.row().label(text="Actions")
         sec = layout.row()
-        sec.column(align=True).operator("operator.bsnn_build")
+        sec.column(align=True).operator("operator.snnib_build")
         
 
 #%%registration
 classes = (
-    BSNN_PT_Panel,
+    SNNIB_PT_Panel,
 )
 
 def register():

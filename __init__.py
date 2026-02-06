@@ -11,7 +11,7 @@ LICENSE:
 MIT License
 
 Copyright (c) 2026 Lukas Steinwender
-lukas.steinwender99+BSNN@gmail.com
+lukas.steinwender99+snnib@gmail.com
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,12 @@ SOFTWARE.
 """
 
 bl_info = {
-    "name": "BlendSNN",
+    "name": "SNNIB",
     "author": "Lukas Steinwender",
     "version": (0, 1, 0),
     "blender": (3, 0, 0),
     "location": "View3D > Sidebar > My Tab",
-    "description": "Spiking Neural Networks in Blender",
+    "description": "Spiking Neural Networks Into Blender",
     "warning": "",
     "doc_url": "",
     "tracker_url": "",
@@ -54,14 +54,14 @@ import importlib
 
 #submodules
 from . import (
-    blend_snn,
+    network,
     geo_nodes,
     opreators,
     panels,
     properties,
 )
 modules = (
-    blend_snn,
+    network,
     geo_nodes,
     opreators,
     panels,

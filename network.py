@@ -21,14 +21,14 @@ class Network:
     """
     
     def __init__(self,
-        bsnn_collection:bpy.types.Collection,
+        snnib_collection:bpy.types.Collection,
         coords:np.ndarray=None,
         synapses:np.ndarray=None,
         ):
         """constructor
         
         Parameters
-            - `bsnn_collection`
+            - `snnib_collection`
                 - `bpy.types.Collection`
                 - collection to create network inside of
             - `coords`
@@ -62,13 +62,13 @@ class Network:
         """
         
         #user input
-        self.n_neurons = bpy.context.scene.bsnn_props.n_neurons
-        self.p_synapses = bpy.context.scene.bsnn_props.p_synapses
-        self.seed       = bpy.context.scene.bsnn_props.seed
+        self.n_neurons = bpy.context.scene.snnib_props.n_neurons
+        self.p_synapses = bpy.context.scene.snnib_props.p_synapses
+        self.seed       = bpy.context.scene.snnib_props.seed
         self.Rng = np.random.default_rng(seed=self.seed)
         
         #attributes
-        self.bsnn_collection = bsnn_collection
+        self.snnib_collection = snnib_collection
         
         if coords is None or synapses is None:
             #generate random network 
@@ -126,16 +126,16 @@ class Network:
             template_obj.data.name = "Neuron.Template"
             
             utils.collection_utils.obj_unlink_all_collections(template_obj)
-            self.template_collection = utils.collection_utils.ensure_collection("Templates", self.bsnn_collection)
+            self.template_collection = utils.collection_utils.ensure_collection("Templates", self.snnib_collection)
             self.template_collection.objects.link(template_obj)
         else:
             template_obj = template_obj
         if neuron_collection is None:
-            self.neuron_collection = utils.collection_utils.ensure_collection("Neurons", self.bsnn_collection)
+            self.neuron_collection = utils.collection_utils.ensure_collection("Neurons", self.snnib_collection)
         else:
             self.neuron_collection = collection
         if axon_collection is None:
-            self.axon_collection = utils.collection_utils.ensure_collection("Axons", self.bsnn_collection)
+            self.axon_collection = utils.collection_utils.ensure_collection("Axons", self.snnib_collection)
         else:
             self.axon_collection = collection
             

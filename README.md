@@ -1,1 +1,1 @@
-# blend_snn
+# SNNIB: Spiking Neural Networks Into Blender

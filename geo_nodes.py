@@ -1,6 +1,6 @@
 """custom geo node node groups
 
-- naming pattern: Bsnn<Name>
+- naming pattern: Snnib<Name>
 """
 
 import bpy
@@ -22,7 +22,7 @@ def position_global():
     """
 
     #group attributes    
-    group_name = "BsnnPositionGlobal"
+    group_name = "SnnibPositionGlobal"
 
     #delete if already existent
     utils.geo_nodes_utils.delete_geonode_groups(group_name)
@@ -68,7 +68,7 @@ def scale_radial():
     """
 
     #group attributes    
-    group_name = "BsnnScaleRadial"
+    group_name = "SnnibScaleRadial"
 
     #delete if already existent
     utils.geo_nodes_utils.delete_geonode_groups(group_name)
