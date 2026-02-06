@@ -172,21 +172,17 @@ class Network:
             ######
             #AXON#
             ######
-                        
             #init neurons axon
             neuron_verts = neuron_obj.data.vertices
             axon_data = bpy.data.curves.new(name=axon_idx, type='CURVE')
-            axon_data.dimensions = '3D'            
-            axon_spline = axon_data.splines.new(type='BEZIER')
-            ##start and end points
-            axon_spline.bezier_points[0].co = neuron_obj.location   #bezier starts with one point
-            axon_spline.bezier_points.add(1)    #now total 2 points (end point)
-            axon_spline.bezier_points[1].co = neuron_obj.location + 2.0*neuron_verts[self.Rng.integers(0, len(neuron_verts))].co  #staring point of axon in random direction
-
-            ##auto-handle spline handles
-            for p in axon_spline.bezier_points:
-                p.handle_left_type = 'AUTO'
-                p.handle_right_type = 'AUTO'            
+            axon_data.dimensions = '3D'
+            _ = utils.mesh_utils.add_spline2data(
+                axon_data,
+                coords=[
+                    neuron_obj.location,
+                    neuron_obj.location + 1.5*neuron_verts[self.Rng.integers(0, len(neuron_verts))].co,  #connection point of axon in random direction
+                ],
+            )
             
             ##create object
             axon_obj = bpy.data.objects.new(axon_idx, axon_data)
@@ -205,23 +201,29 @@ class Network:
         return
     
     def draw_synapses(self,
-        collection:bpy.types.Collection=None,    
         ):
         """draws synapses into the scene
         """
-
-        #default params
-        if collection is None:
-            self.axon_collection = utils.collection_utils.ensure_collection("Axons", self.bsnn_collection)
-        else:
-            self.axon_collection = collection
-        
-        #create synapses (additional splines appended to axon)
+    
+        #create synapses (additional splines appended to axon that connect to postsynaptic neuron)
         for s in range(self.n_synapses):
             #synapse parameters
             synapse = self.synapses[s]
             pre_neuron = bpy.data.objects.get(f"Neuron.{synapse[0]:04.0f}")
-            post_neuron = bpy.data.objects.get(f"Neuron.{synapse[1]:04.0f}")          
+            pre_axon = bpy.data.objects.get(f"Axon.{synapse[0]:04.0f}")
+            post_neuron = bpy.data.objects.get(f"Neuron.{synapse[1]:04.0f}")
+            
+            
+            pre_axon_data = pre_axon.data
+            _ = utils.mesh_utils.add_spline2data(
+                pre_axon_data,
+                coords=[
+                    pre_axon_data.splines[0].bezier_points[-1].co,  #last point of axon-root
+                    np.random.rand(3),  #connection point of axon in random direction
+                ],
+            )
+            logger.debug(type(pre_axon_data))
+            
 
             
             """TODO
