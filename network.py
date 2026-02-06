@@ -21,16 +21,12 @@ class Network:
     """
     
     def __init__(self,
-        snnib_collection:bpy.types.Collection,
         coords:np.ndarray=None,
         synapses:np.ndarray=None,
         ):
         """constructor
         
         Parameters
-            - `snnib_collection`
-                - `bpy.types.Collection`
-                - collection to create network inside of
             - `coords`
                 - `np.ndarray`, optional
                 - coordinates of the neurons contained in the network
@@ -62,13 +58,15 @@ class Network:
         """
         
         #user input
-        self.n_neurons = bpy.context.scene.snnib_props.n_neurons
-        self.p_synapses = bpy.context.scene.snnib_props.p_synapses
-        self.seed       = bpy.context.scene.snnib_props.seed
-        self.Rng = np.random.default_rng(seed=self.seed)
+        self.network_container  = bpy.context.scene.network_container
+        self.axon_length        = bpy.context.scene.snnib_props.axon_length
+        self.n_neurons          = bpy.context.scene.snnib_props.n_neurons
+        self.p_synapses         = bpy.context.scene.snnib_props.p_synapses
+        self.seed               = bpy.context.scene.snnib_props.seed
+        self.voxel_size         = bpy.context.scene.snnib_props.voxel_size
         
-        #attributes
-        self.snnib_collection = snnib_collection
+        #get RNG
+        self.Rng = np.random.default_rng(seed=self.seed)
         
         if coords is None or synapses is None:
             #generate random network 
@@ -84,7 +82,6 @@ class Network:
         #infered attributes
         self.neuron_collection = None
         
-        
         return
     
     def generate_network(self,
@@ -93,11 +90,15 @@ class Network:
         """
         
         #generate neurons at random locations
-        coords = (self.Rng.random((self.n_neurons,3)) - 0.5) * 10
+        min = np.array([v.co for v in self.network_container.data.vertices]).min(axis=0)
+        max = np.array([v.co for v in self.network_container.data.vertices]).max(axis=0)
+
+        coords = self.Rng.random((self.n_neurons,3)) * (max - min) + min
 
         #generate random synapses
-        synapses = self.Rng.random((self.n_neurons,self.n_neurons))             #synapse weight
-        synapses *= (self.Rng.random(synapses.shape) < self.p_synapses)      #connection probability
+        synapses = self.Rng.random((self.n_neurons,self.n_neurons))         #synapse weight
+        synapses *= (self.Rng.random(synapses.shape) < self.p_synapses)     #connection probability
+        synapses *= (1-np.eye(self.n_neurons,self.n_neurons))               #prevent self-connection (for now)
         connected = (synapses > 0)
         synapses = np.append(np.transpose(np.where(connected)), synapses[connected].reshape(-1,1), axis=1)
               
@@ -110,8 +111,6 @@ class Network:
     
     def draw_neurons(self,
         template_obj:bpy.types.Object=None,
-        neuron_collection:bpy.types.Collection=None,
-        axon_collection:bpy.types.Collection=None,
         ):
         """draws neurons into the scene
         
@@ -125,20 +124,17 @@ class Network:
             template_obj.name = "Neuron.Template"
             template_obj.data.name = "Neuron.Template"
             
-            utils.collection_utils.obj_unlink_all_collections(template_obj)
-            self.template_collection = utils.collection_utils.ensure_collection("Templates", self.snnib_collection)
-            self.template_collection.objects.link(template_obj)
+            #add to scene
+            bpy.context.collection.objects.link(template_obj)
+                    
+            #parenting
+            template_obj.parent = self.network_container          
+                        
+            # utils.collection_utils.obj_unlink_all_collections(template_obj)
+            # self.template_collection = utils.collection_utils.ensure_collection("Templates", self.snnib_collection)
+            # self.template_collection.objects.link(template_obj)
         else:
             template_obj = template_obj
-        if neuron_collection is None:
-            self.neuron_collection = utils.collection_utils.ensure_collection("Neurons", self.snnib_collection)
-        else:
-            self.neuron_collection = collection
-        if axon_collection is None:
-            self.axon_collection = utils.collection_utils.ensure_collection("Axons", self.snnib_collection)
-        else:
-            self.axon_collection = collection
-            
                 
         #generating instances
         for n in range(self.n_neurons):
@@ -162,13 +158,6 @@ class Network:
             neuron_obj = bpy.data.objects.new(neuron_idx, template_obj.data)
             neuron_obj.location = self.coords[n]
             
-            
-            #unlink from all current collections
-            utils.collection_utils.obj_unlink_all_collections(neuron_obj)
-
-            #add to neuron collection            
-            self.neuron_collection.objects.link(neuron_obj)            
-            
             ######
             #AXON#
             ######
@@ -179,15 +168,17 @@ class Network:
             _ = utils.mesh_utils.add_spline2data(
                 axon_data,
                 coords=[
-                    neuron_obj.location,
-                    neuron_obj.location + 1.5*neuron_verts[self.Rng.integers(0, len(neuron_verts))].co,  #connection point of axon in random direction
+                    (0,0,0),    #because child of neuron
+                    (self.Rng.random(3) - 0.5) * self.axon_length
+                    #in case of no parenting use neurons location
+                    # neuron_obj.location,
+                    # neuron_obj.location + 1.5*neuron_verts[self.Rng.integers(0, len(neuron_verts))].co,  #connection point of axon in random direction
                 ],
             )
             
             ##create object
             axon_obj = bpy.data.objects.new(axon_idx, axon_data)
-            self.axon_collection.objects.link(axon_obj)
-            
+            # self.axon_collection.objects.link(axon_obj)
         
             #copy geonodes
             # utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
@@ -197,14 +188,23 @@ class Network:
             
             #add remesh modifier to merge geometry
             neuron_remesh = neuron_obj.modifiers.new(f"Remesh_{neuron_obj.name}", 'REMESH')
+            neuron_remesh.voxel_size = self.voxel_size
         
+            #add to scene
+            bpy.context.collection.objects.link(neuron_obj)
+            bpy.context.collection.objects.link(axon_obj)
+                    
+            #parenting
+            axon_obj.parent = neuron_obj
+            neuron_obj.parent = self.network_container            
+            
         return
     
     def draw_synapses(self,
         ):
         """draws synapses into the scene
         """
-    
+        print(self.synapses)
         #create synapses (additional splines appended to axon that connect to postsynaptic neuron)
         for s in range(self.n_synapses):
             #synapse parameters
@@ -215,14 +215,16 @@ class Network:
             
             
             pre_axon_data = pre_axon.data
+            print(pre_axon_data.splines[0].bezier_points[-1].co, post_neuron.location, post_neuron.matrix_world.translation)
             _ = utils.mesh_utils.add_spline2data(
                 pre_axon_data,
                 coords=[
                     pre_axon_data.splines[0].bezier_points[-1].co,  #last point of axon-root
-                    np.random.rand(3),  #connection point of axon in random direction
+                    # post_neuron.location,
+                    post_neuron.location,
                 ],
             )
-            logger.debug(type(pre_axon_data))
+            # logger.debug(type(pre_axon_data))
             
 
             
@@ -278,16 +280,7 @@ class Network:
 
 #%%registering
 def register():
-
-    #custom objects
-    bpy.types.Scene.template_neuron = bpy.props.PointerProperty(
-        name="Template Neuron",
-        type=bpy.types.Object
-    )
-
-
+    pass
 
 def unregister():
-    
-    #custom objects
-    del bpy.types.Scene.template_neuron
+    pass

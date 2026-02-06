@@ -26,26 +26,39 @@ class SNNIB_PT_Panel(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
         
-        #global header        
-        layout.label(text="Generate a Spiking Neural Network")
+        # #global header        
+        # layout.label(text="Generate a Spiking Neural Network")
 
         #sections
-        layout.row().label(text="Random network")
-        layout.row().prop(context.scene.snnib_props, "seed")
-        sec = layout.row()
-        sec.column().prop(scene, "template_neuron", text="Template neuron")
-        row = layout.row()
+        box = layout.box()
+        box.row().label(text="General Settings")
+        box.row().prop(scene, "network_container", text="Network container")
+        box.row().prop(context.scene.snnib_props, "voxel_size", text="Voxel Size")
+        box.separator()
+        box.row().label(text="Axons")
+        box.row().prop(context.scene.snnib_props, "axon_length")
+        box.row().prop(context.scene.snnib_props, "axon_branching_factor")
+        layout.separator()
+        
+        box = layout.box()
+        box.row().label(text="Random network")
+        box.row().prop(context.scene.snnib_props, "seed")
+        row = box.row()
+        
+        row.column().prop(scene, "template_neuron", text="Template neuron")
+        row = box.row()
         row.column().prop(context.scene.snnib_props, "n_neurons")
         row.column().prop(context.scene.snnib_props, "p_synapses")
         layout.separator()        
         
-        layout.row().label(text="Network from file")
+        box = layout.box()
+        box.row().label(text="Network from file")
+        box.row().label(text="TODO: input")
         layout.separator()
         
-        
         layout.row().label(text="Actions")
-        sec = layout.row()
-        sec.column(align=True).operator("operator.snnib_build")
+        row = layout.row()
+        row.column(align=True).operator("operator.snnib_build")
         
 
 #%%registration

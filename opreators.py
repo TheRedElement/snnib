@@ -23,15 +23,15 @@ class SNNIB_OT_build(bpy.types.Operator):
 
     def execute(self, context):
         
-        #get collection
-        snnib_collection = utils.collection_utils.ensure_collection("SNNIB")
-        utils.collection_utils.clear_collection(snnib_collection)   #make sure collection is clean for testing
-        
+        #DEV: clear container children
+        logger.warning(f"DEV: clearing children of network container")
+        for child in bpy.context.scene.network_container.children_recursive:
+            bpy.data.objects.remove(child, do_unlink=True)
+                        
         #init network
         coords = None
         synapses = None
         Net = network.Network(
-            snnib_collection=snnib_collection,
             coords=coords,
             synapses=synapses,
         )
