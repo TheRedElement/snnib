@@ -23,25 +23,13 @@ class BSNN_OT_build(bpy.types.Operator):
 
     def execute(self, context):
         
-        #get user input
-        n_neurons = bpy.context.scene.bsnn_props.n_neurons
-        p_synapses = bpy.context.scene.bsnn_props.p_synapses
-        
         #get collection
         bsnn_collection = utils.collection_utils.ensure_collection("BSNN")
         utils.collection_utils.clear_collection(bsnn_collection)   #make sure collection is clean for testing
         
-        #generate neurons at random locations
-        coords = (np.random.rand(n_neurons,3) - 0.5) * 10
-
-        #generate random synapses
-        synapses = np.random.rand(n_neurons,n_neurons)              #synapse weight
-        synapses *= (np.random.rand(*synapses.shape) < p_synapses)  #connection probability
-        connected = (synapses > 0)
-        np.transpose(synapses.nonzero())
-        synapses = np.append(np.transpose(np.where(connected)), synapses[connected].reshape(-1,1), axis=1)
-        
         #init network
+        coords = None
+        synapses = None
         Net = blend_snn.Network(
             bsnn_collection=bsnn_collection,
             coords=coords,
@@ -50,7 +38,7 @@ class BSNN_OT_build(bpy.types.Operator):
         Net.draw_neurons(
             template_obj=bpy.context.scene.template_neuron
         )
-        Net.draw_axons()
+        Net.draw_synapses()
         
         return {'FINISHED'}
 

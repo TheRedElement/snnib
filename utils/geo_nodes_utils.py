@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 #%%definitions
 def copy_geonodes(
     src:bpy.types.Object, targ:bpy.types.Object,
-    ):
+    ) -> bpy.types.NodesModifier:
     """sets the geonodes modifier of `targ` to the same as `src`
     """
     
@@ -33,7 +33,7 @@ def copy_geonodes(
     # Copy the node group from the source modifier
     targ_gn_mod.node_group = src_gn_mod.node_group
     
-    return {'FINISHED'}
+    return targ_gn_mod
 
 def delete_geonode_groups(group_name:str):
     """deletes all geometry node node groups with name `group_name`
@@ -49,6 +49,7 @@ def delete_geonode_groups(group_name:str):
         bpy.data.node_groups.remove(ng)
 
     return {'FINISHED'}
+
 #%%registration
 def register():
     pass

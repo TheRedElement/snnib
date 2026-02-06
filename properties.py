@@ -20,6 +20,11 @@ class BsnnProperties(bpy.types.PropertyGroup):
         max=1.0,
         step=0.01,
     )
+    seed: bpy.props.IntProperty(
+        name="Random Seed",
+        default=0,
+        min=0,
+    )
 
 #%%registring
 classes = (

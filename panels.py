@@ -32,6 +32,7 @@ class BSNN_PT_Panel(bpy.types.Panel):
 
         #sections
         layout.row().label(text="Random network")
+        layout.row().prop(context.scene.bsnn_props, "seed")
         sec = layout.row()
         sec.column().prop(scene, "template_neuron", text="Template neuron")
         row = layout.row()

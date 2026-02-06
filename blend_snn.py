@@ -22,8 +22,8 @@ class Network:
     
     def __init__(self,
         bsnn_collection:bpy.types.Collection,
-        coords:np.ndarray,
-        synapses:np.ndarray,
+        coords:np.ndarray=None,
+        synapses:np.ndarray=None,
         ):
         """constructor
         
@@ -31,11 +31,8 @@ class Network:
             - `bsnn_collection`
                 - `bpy.types.Collection`
                 - collection to create network inside of
-            - `times`
-                - `np.ndarray`
-                - times of the network simulation
             - `coords`
-                - `np.ndarray`
+                - `np.ndarray`, optional
                 - coordinates of the neurons contained in the network
                 - 3d
                     - axis 0 is to number of neurons
@@ -43,6 +40,8 @@ class Network:
                         - `x`
                         - `y`
                         - `z`
+                - the default is `None`
+                    - will generate a random network
             - `synapses`
                 - `np.ndarray`
                 - synapses present in the network
@@ -52,30 +51,67 @@ class Network:
                         - index of presynaptic neuron
                         - index of postsynaptic neuron
                         - synaptic weight
+                - the default is `None`
+                    - will generate a random network
         
-                    
                 
         Raises
         
         Returns
         
         """
-            
-        self.bsnn_collection = bsnn_collection
-        self.coords = coords
-        self.synapses = synapses
         
+        #user input
+        self.n_neurons = bpy.context.scene.bsnn_props.n_neurons
+        self.p_synapses = bpy.context.scene.bsnn_props.p_synapses
+        self.seed       = bpy.context.scene.bsnn_props.seed
+        self.Rng = np.random.default_rng(seed=self.seed)
+        
+        #attributes
+        self.bsnn_collection = bsnn_collection
+        
+        if coords is None or synapses is None:
+            #generate random network 
+            self.generate_network()
+        else:
+            #TODO: read from file
+            self.coords = coords
+            self.synapses = synapses
+            self.n_neurons = len(coords)
+            self.n_synapses = len(synapses)
+            self.p_synapses = self.n_synapses / self.n_neurons**2
+            
         #infered attributes
-        self.n_neurons = len(coords)
-        self.n_synapses = len(synapses)
         self.neuron_collection = None
         
         
         return
     
+    def generate_network(self,
+        ):
+        """generates random network based on user input
+        """
+        
+        #generate neurons at random locations
+        coords = (self.Rng.random((self.n_neurons,3)) - 0.5) * 10
+
+        #generate random synapses
+        synapses = self.Rng.random((self.n_neurons,self.n_neurons))             #synapse weight
+        synapses *= (self.Rng.random(synapses.shape) < self.p_synapses)      #connection probability
+        connected = (synapses > 0)
+        synapses = np.append(np.transpose(np.where(connected)), synapses[connected].reshape(-1,1), axis=1)
+              
+        #set attributes
+        self.coords = coords
+        self.synapses = synapses
+        self.n_synapses = len(synapses)
+        
+        return
+    
     def draw_neurons(self,
         template_obj:bpy.types.Object=None,
-        collection:bpy.types.Collection=None,
+        neuron_collection:bpy.types.Collection=None,
+        axon_collection:bpy.types.Collection=None,
         ):
         """draws neurons into the scene
         
@@ -94,52 +130,110 @@ class Network:
             self.template_collection.objects.link(template_obj)
         else:
             template_obj = template_obj
-        if collection is None:
+        if neuron_collection is None:
             self.neuron_collection = utils.collection_utils.ensure_collection("Neurons", self.bsnn_collection)
         else:
             self.neuron_collection = collection
+        if axon_collection is None:
+            self.axon_collection = utils.collection_utils.ensure_collection("Axons", self.bsnn_collection)
+        else:
+            self.axon_collection = collection
             
+                
         #generating instances
         for n in range(self.n_neurons):
-            #instantiate new neuron based on `template_obj`
+            #create new neuron based on `template_obj`
             neuron_idx = f"Neuron.{n:04d}"
+            axon_idx = f"Axon.{n:04d}"
             
+            ########
+            #NEURON#
+            ########
+            """
             #generation (non-linked copy)
             neuron_obj = template_obj.copy()
             neuron_obj.name = neuron_idx            
             neuron_obj.data = template_obj.data.copy()
             neuron_obj.data.name = neuron_idx
             neuron_obj.location = self.coords[n]
-            
-            """#instanciation
-            neuron_obj = bpy.data.objects.new(neuron_idx, template_obj.data)
-            neuron_obj.location = self.coords[n]
             """
             
-            #copy geonodes
-            utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
+            #instanciation
+            neuron_obj = bpy.data.objects.new(neuron_idx, template_obj.data)
+            neuron_obj.location = self.coords[n]
+            
             
             #unlink from all current collections
             utils.collection_utils.obj_unlink_all_collections(neuron_obj)
 
             #add to neuron collection            
-            self.neuron_collection.objects.link(neuron_obj)
+            self.neuron_collection.objects.link(neuron_obj)            
+            
+            ######
+            #AXON#
+            ######
+                        
+            #init neurons axon
+            neuron_verts = neuron_obj.data.vertices
+            axon_data = bpy.data.curves.new(name=axon_idx, type='CURVE')
+            axon_data.dimensions = '3D'            
+            axon_spline = axon_data.splines.new(type='BEZIER')
+            ##start and end points
+            axon_spline.bezier_points[0].co = neuron_obj.location   #bezier starts with one point
+            axon_spline.bezier_points.add(1)    #now total 2 points (end point)
+            axon_spline.bezier_points[1].co = neuron_obj.location + 2.0*neuron_verts[self.Rng.integers(0, len(neuron_verts))].co  #staring point of axon in random direction
+
+            ##auto-handle spline handles
+            for p in axon_spline.bezier_points:
+                p.handle_left_type = 'AUTO'
+                p.handle_right_type = 'AUTO'            
+            
+            ##create object
+            axon_obj = bpy.data.objects.new(axon_idx, axon_data)
+            self.axon_collection.objects.link(axon_obj)
+            
+        
+            #copy geonodes
+            # utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
+            neuron_gn = utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
+            neuron_gn = neuron_obj.modifiers["GeometryNodes"]
+            neuron_gn["Socket_5"] = axon_obj    #not sure why `Socket_5`
+            
+            #add remesh modifier to merge geometry
+            neuron_remesh = neuron_obj.modifiers.new(f"Remesh_{neuron_obj.name}", 'REMESH')
         
         return
     
-    def draw_axons(self,
+    def draw_synapses(self,
+        collection:bpy.types.Collection=None,    
         ):
         """draws synapses into the scene
         """
+
+        #default params
+        if collection is None:
+            self.axon_collection = utils.collection_utils.ensure_collection("Axons", self.bsnn_collection)
+        else:
+            self.axon_collection = collection
         
-        #create synapses
+        #create synapses (additional splines appended to axon)
         for s in range(self.n_synapses):
             #synapse parameters
-            synapse_idx = f"Synapse.{s:04d}"
             synapse = self.synapses[s]
             pre_neuron = bpy.data.objects.get(f"Neuron.{synapse[0]:04.0f}")
             post_neuron = bpy.data.objects.get(f"Neuron.{synapse[1]:04.0f}")          
 
+            
+            """TODO
+            #add hook modifer (to link synapse start and end to neuron positions)
+            mod = pre_neuron.modifiers.new(f"Hook_{pre_neuron.name}.{s:03d}", 'HOOK')
+            mod.object = post_neuron                #set parent
+            mod.vertex_indices_set([v_post_idx])    #set influenced vertices
+            #mod.center = neuron_obj.location
+            mod.center = pre_neuron.matrix_world.inverted() @ post_neuron.matrix_world.translation            
+            """
+            
+            """
             #select neuron to manipulate (pre = root of axon)
             bpy.ops.object.select_all(action='DESELECT')
             pre_neuron.select_set(True)
@@ -172,15 +266,8 @@ class Network:
             v_post.co += offset
             mesh.edges.add(1)
             mesh.edges[-1].vertices = (best_v_idx, v_post_idx)
-            
-            """TODO
-            #add hook modifer (to link synapse start and end to neuron positions)
-            mod = pre_neuron.modifiers.new(f"Hook_{pre_neuron.name}.{s:03d}", 'HOOK')
-            mod.object = post_neuron                #set parent
-            mod.vertex_indices_set([v_post_idx])    #set influenced vertices
-            #mod.center = neuron_obj.location
-            mod.center = pre_neuron.matrix_world.inverted() @ post_neuron.matrix_world.translation
             """
+            
             
         return
 
