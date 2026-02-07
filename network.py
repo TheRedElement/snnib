@@ -80,7 +80,8 @@ class Network:
             self.p_synapses = self.n_synapses / self.n_neurons**2
             
         #infered attributes
-        self.neuron_collection = None
+        self.neuron_objects = []
+        self.axon_objects = []
         
         return
     
@@ -139,8 +140,8 @@ class Network:
         #generating instances
         for n in range(self.n_neurons):
             #create new neuron based on `template_obj`
-            neuron_idx = f"Neuron.{n:04d}"
-            axon_idx = f"Axon.{n:04d}"
+            neuron_idx = f"Neuron"
+            axon_idx = f"Axon"
             
             ########
             #NEURON#
@@ -157,6 +158,7 @@ class Network:
             #instanciation
             neuron_obj = bpy.data.objects.new(neuron_idx, template_obj.data)
             neuron_obj.location = self.coords[n]
+            self.neuron_objects.append(neuron_obj)
             
             ######
             #AXON#
@@ -178,7 +180,7 @@ class Network:
             
             ##create object
             axon_obj = bpy.data.objects.new(axon_idx, axon_data)
-            # self.axon_collection.objects.link(axon_obj)
+            self.axon_objects.append(axon_obj)
         
             #copy geonodes
             # utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
@@ -196,7 +198,7 @@ class Network:
                     
             #parenting
             axon_obj.parent = neuron_obj
-            neuron_obj.parent = self.network_container            
+            neuron_obj.parent = self.network_container
             
         return
     
@@ -204,74 +206,30 @@ class Network:
         ):
         """draws synapses into the scene
         """
-        print(self.synapses)
+
         #create synapses (additional splines appended to axon that connect to postsynaptic neuron)
         for s in range(self.n_synapses):
             #synapse parameters
             synapse = self.synapses[s]
-            pre_neuron = bpy.data.objects.get(f"Neuron.{synapse[0]:04.0f}")
-            pre_axon = bpy.data.objects.get(f"Axon.{synapse[0]:04.0f}")
-            post_neuron = bpy.data.objects.get(f"Neuron.{synapse[1]:04.0f}")
-            
+            #pre_neuron = bpy.data.objects.get(f"Neuron.{synapse[0]:04.0f}")
+            #pre_axon = bpy.data.objects.get(f"Axon.{synapse[0]:04.0f}")
+            #post_neuron = bpy.data.objects.get(f"Neuron.{synapse[1]:04.0f}")
+            pre_neuron = self.neuron_objects[int(synapse[0])]
+            pre_axon = self.axon_objects[int(synapse[0])]
+            post_neuron = self.neuron_objects[int(synapse[1])]
             
             pre_axon_data = pre_axon.data
-            print(pre_axon_data.splines[0].bezier_points[-1].co, post_neuron.location, post_neuron.matrix_world.translation)
+            
+            offset = post_neuron.location - pre_neuron.location
+            print(offset)
             _ = utils.mesh_utils.add_spline2data(
                 pre_axon_data,
                 coords=[
                     pre_axon_data.splines[0].bezier_points[-1].co,  #last point of axon-root
-                    # post_neuron.location,
-                    post_neuron.location,
+                    # np.array(pre_axon_data.splines[0].bezier_points[-1].co) + 10,
+                    pre_axon_data.splines[0].bezier_points[-1].co + offset,
                 ],
             )
-            # logger.debug(type(pre_axon_data))
-            
-
-            
-            """TODO
-            #add hook modifer (to link synapse start and end to neuron positions)
-            mod = pre_neuron.modifiers.new(f"Hook_{pre_neuron.name}.{s:03d}", 'HOOK')
-            mod.object = post_neuron                #set parent
-            mod.vertex_indices_set([v_post_idx])    #set influenced vertices
-            #mod.center = neuron_obj.location
-            mod.center = pre_neuron.matrix_world.inverted() @ post_neuron.matrix_world.translation            
-            """
-            
-            """
-            #select neuron to manipulate (pre = root of axon)
-            bpy.ops.object.select_all(action='DESELECT')
-            pre_neuron.select_set(True)
-            bpy.context.view_layer.objects.active = pre_neuron
-
-            #get most-aligned vertex
-            offset = post_neuron.matrix_world.translation - pre_neuron.matrix_world.translation
-            direction = offset.normalized()
-            
-            best_v_idx = None
-            best_score = 1e-20
-            for idx, v in enumerate(pre_neuron.data.vertices):
-                vec = v.co - pre_neuron.location
-                score = vec.dot(direction)
-                if score > best_score:
-                    best_score = score
-                    best_v_idx = idx
-                    
-            if best_v_idx is None:
-                logger.debug("TODO: autapse (self-connection)")
-                #TODO: self connection
-                continue
-            
-            
-            #extrude vertex
-            mesh = pre_neuron.data
-            mesh.vertices.add(1)
-            v_post_idx = len(mesh.vertices) - 1
-            v_post = mesh.vertices[v_post_idx]
-            v_post.co += offset
-            mesh.edges.add(1)
-            mesh.edges[-1].vertices = (best_v_idx, v_post_idx)
-            """
-            
             
         return
 
