@@ -18,6 +18,15 @@ from . import utils
 #%%definitions
 class Network:
     """container representing a spiking neural network
+    
+    Attributes
+        - TODO
+        
+    Inferred Attributes
+        - TODO
+        
+    Methods
+        - TODO
     """
     
     def __init__(self,
@@ -49,7 +58,6 @@ class Network:
                         - synaptic weight
                 - the default is `None`
                     - will generate a random network
-        
                 
         Raises
         
@@ -58,12 +66,15 @@ class Network:
         """
         
         #user input
-        self.network_container  = bpy.context.scene.network_container
-        self.axon_length        = bpy.context.scene.snnib_props.axon_length
-        self.n_neurons          = bpy.context.scene.snnib_props.n_neurons
-        self.p_synapses         = bpy.context.scene.snnib_props.p_synapses
-        self.seed               = bpy.context.scene.snnib_props.seed
-        self.voxel_size         = bpy.context.scene.snnib_props.voxel_size
+        self.network_container              = bpy.context.scene.network_container
+        self.axon_length                    = bpy.context.scene.snnib_props.axon_length
+        self.n_neurons                      = bpy.context.scene.snnib_props.n_neurons
+        self.p_synapses                     = bpy.context.scene.snnib_props.p_synapses
+        self.synapse_max_nonconnections     = bpy.context.scene.snnib_props.synapse_max_nonconnections
+        self.synapse_maxlen_nonconnections  = bpy.context.scene.snnib_props.synapse_maxlen_nonconnections
+        self.synapse_resolution             = bpy.context.scene.snnib_props.synapse_resolution
+        self.seed                           = bpy.context.scene.snnib_props.seed
+        self.voxel_size                     = bpy.context.scene.snnib_props.voxel_size
         
         #get RNG
         self.Rng = np.random.default_rng(seed=self.seed)
@@ -130,10 +141,6 @@ class Network:
                     
             #parenting
             template_obj.parent = self.network_container          
-                        
-            # utils.collection_utils.obj_unlink_all_collections(template_obj)
-            # self.template_collection = utils.collection_utils.ensure_collection("Templates", self.snnib_collection)
-            # self.template_collection.objects.link(template_obj)
         else:
             template_obj = template_obj
                 
@@ -183,7 +190,6 @@ class Network:
             self.axon_objects.append(axon_obj)
         
             #copy geonodes
-            # utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
             neuron_gn = utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
             neuron_gn = neuron_obj.modifiers["GeometryNodes"]
             neuron_gn["Socket_5"] = axon_obj    #not sure why `Socket_5`
@@ -211,9 +217,6 @@ class Network:
         for s in range(self.n_synapses):
             #synapse parameters
             synapse = self.synapses[s]
-            #pre_neuron = bpy.data.objects.get(f"Neuron.{synapse[0]:04.0f}")
-            #pre_axon = bpy.data.objects.get(f"Axon.{synapse[0]:04.0f}")
-            #post_neuron = bpy.data.objects.get(f"Neuron.{synapse[1]:04.0f}")
             pre_neuron = self.neuron_objects[int(synapse[0])]
             pre_axon = self.axon_objects[int(synapse[0])]
             post_neuron = self.neuron_objects[int(synapse[1])]
@@ -221,15 +224,40 @@ class Network:
             pre_axon_data = pre_axon.data
             
             offset = post_neuron.location - pre_neuron.location
-            print(offset)
             _ = utils.mesh_utils.add_spline2data(
                 pre_axon_data,
-                coords=[
+                coords=np.linspace(
                     pre_axon_data.splines[0].bezier_points[-1].co,  #last point of axon-root
-                    # np.array(pre_axon_data.splines[0].bezier_points[-1].co) + 10,
                     pre_axon_data.splines[0].bezier_points[-1].co + offset,
-                ],
+                    self.synapse_resolution,
+                ),
             )
+            
+            #add some random branching
+            axon_verts = np.array([bp.co for spline in pre_axon_data.splines for bp in spline.bezier_points[1:-1]])
+            for sncidx in range(self.synapse_max_nonconnections):
+                
+                branch_root_idx = self.Rng.integers(0, len(axon_verts)-1)                       #index of vertex to branch off of
+                branch_root = axon_verts[branch_root_idx]                                       #vertex to branch off of                
+
+                """TODO: direction constraint
+                direction = (axon_verts[branch_root_idx] - branch_root)                         #local direction of connection
+                direction /= np.linalg.norm(direction)                                          #normalize
+                direction += ((self.Rng.random(3)-0.5) * 0.3)                                   #add variation to direction to allow growth away from root
+                direction /= np.linalg.norm(direction)                                          #normalize to avoid scaling issues
+                """
+                direction = 1.0
+                _ = utils.mesh_utils.add_spline2data(
+                    pre_axon_data,
+                    coords=np.linspace(
+                        branch_root,
+                        branch_root + (self.Rng.random(3) - 0.5) * self.synapse_maxlen_nonconnections * direction,
+                        self.synapse_resolution
+                    )
+                )
+                
+                #update axon_verts
+                axon_verts = np.array([bp.co for spline in pre_axon_data.splines for bp in spline.bezier_points[1:-1]])
             
         return
 

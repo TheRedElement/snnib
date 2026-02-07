@@ -7,12 +7,6 @@ class SnnibProperties(bpy.types.PropertyGroup):
     """custom properties used in the UI
     """
 
-    axon_branching_factor: bpy.props.IntProperty(
-        name="Axon Branching Factor",
-        default=3,
-        min=0,
-        step=1,
-    )
     axon_length: bpy.props.FloatProperty(
         name="Axon Length",
         default=3,
@@ -21,9 +15,9 @@ class SnnibProperties(bpy.types.PropertyGroup):
     )
     n_neurons: bpy.props.IntProperty(
         name="Number of Neurons",
-        default=10,
+        default=5,
         min=0,
-    )
+    )    
     p_synapses: bpy.props.FloatProperty(
         name="Synapse Connection Probability",
         default=0.5,
@@ -36,6 +30,22 @@ class SnnibProperties(bpy.types.PropertyGroup):
         default=0,
         min=0,
     )
+    synapse_max_nonconnections: bpy.props.IntProperty(
+        name="Maximum Number of Synapse Non-Connections",
+        default=3,
+        min=0,
+    )
+    synapse_maxlen_nonconnections: bpy.props.FloatProperty(
+        name="Maximum Length of Synapse Non-Connection",
+        default=3,
+        min=0,
+        step=0.1,
+    )    
+    synapse_resolution: bpy.props.IntProperty(
+        name="Synapse Resolution",
+        default=3,
+        min=0,
+    ) 
     voxel_size: bpy.props.FloatProperty(
         name="Voxel Size",
         default=0.1,    #m

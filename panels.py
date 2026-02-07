@@ -37,7 +37,11 @@ class SNNIB_PT_Panel(bpy.types.Panel):
         box.separator()
         box.row().label(text="Axons")
         box.row().prop(context.scene.snnib_props, "axon_length")
-        box.row().prop(context.scene.snnib_props, "axon_branching_factor")
+        layout.separator()
+        box.row().label(text="Synapses")
+        box.row().prop(context.scene.snnib_props, "synapse_max_nonconnections")
+        box.row().prop(context.scene.snnib_props, "synapse_maxlen_nonconnections")                
+        box.row().prop(context.scene.snnib_props, "synapse_resolution")
         layout.separator()
         
         box = layout.box()
