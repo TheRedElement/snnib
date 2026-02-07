@@ -61,8 +61,8 @@ class SNNIB_PT_Panel(bpy.types.Panel):
         layout.separator()
         
         layout.row().label(text="Actions")
-        row = layout.row()
-        row.column(align=True).operator("operator.snnib_build")
+        layout.row().column(align=True).operator("operator.snnib_build_snn")
+        layout.row().column(align=True).operator("operator.snnib_make_template_neuron")
         
 
 #%%registration
