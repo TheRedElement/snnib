@@ -66,7 +66,10 @@ class Network:
         """
         
         #user input
-        self.network_container              = bpy.context.scene.network_container
+        if bpy.context.scene.network_container is None:
+            self.network_container = bpy.context.active_object
+        else:
+            self.network_container              = bpy.context.scene.network_container
         self.axon_length                    = bpy.context.scene.snnib_props.axon_length
         self.n_neurons                      = bpy.context.scene.snnib_props.n_neurons
         self.p_synapses                     = bpy.context.scene.snnib_props.p_synapses
@@ -100,7 +103,7 @@ class Network:
         ):
         """generates random network based on user input
         """
-        
+                
         #generate neurons at random locations
         min = np.array([v.co for v in self.network_container.data.vertices]).min(axis=0)
         max = np.array([v.co for v in self.network_container.data.vertices]).max(axis=0)
@@ -119,6 +122,23 @@ class Network:
         self.synapses = synapses
         self.n_synapses = len(synapses)
         
+        return
+    
+    def setup_container(self):
+        
+        #initial cleanup
+        logger.warning(f"clearing children of network container")
+        for child in self.network_container.children_recursive:
+            bpy.data.objects.remove(child, do_unlink=True)          
+
+        #add geonodes (if none existent)
+        if len([mod for mod in self.network_container.modifiers if mod.type=='NODES']) == 0:
+            gn = self.network_container.modifiers.new(name="Network.Container", type='NODES')
+            gn.node_group = bpy.data.node_groups["SnnibNetworkContainer"]
+        
+        #other settings
+        self.network_container.hide_render = True
+    
         return
     
     def draw_neurons(self,
@@ -143,7 +163,7 @@ class Network:
             template_obj.parent = self.network_container          
         else:
             template_obj = template_obj
-                
+                        
         #generating instances
         for n in range(self.n_neurons):
             #create new neuron based on `template_obj`
@@ -191,20 +211,23 @@ class Network:
         
             #copy geonodes
             neuron_gn = utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
-            neuron_gn = neuron_obj.modifiers["GeometryNodes"]
-            neuron_gn["Socket_5"] = axon_obj    #not sure why `Socket_5`
+            neuron_gn = [mod for mod in neuron_obj.modifiers if mod.type == 'NODES'][0]     #first geonodes modifier of the template object
+
+            neuron_gn["Socket_1"] = axon_obj                   #not sure why `Socket_1`
+            neuron_gn["Socket_2"] = self.network_container     #not sure why `Socket_2`
             
             #add remesh modifier to merge geometry
             neuron_remesh = neuron_obj.modifiers.new(f"Remesh_{neuron_obj.name}", 'REMESH')
             neuron_remesh.voxel_size = self.voxel_size
         
-            #add to scene
-            bpy.context.collection.objects.link(neuron_obj)
-            bpy.context.collection.objects.link(axon_obj)
-                    
             #parenting
             axon_obj.parent = neuron_obj
             neuron_obj.parent = self.network_container
+            
+            for obj in [neuron_obj, axon_obj]:
+                #add to scene (link to all collections that the parent is in)
+                for col in self.network_container.users_collection:
+                    col.objects.link(obj)
             
         return
     

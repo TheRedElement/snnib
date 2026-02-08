@@ -33,6 +33,7 @@ class SNNIB_PT_Panel(bpy.types.Panel):
         box = layout.box()
         box.row().label(text="General Settings")
         box.row().prop(scene, "network_container", text="Network container")
+        box.row().prop(scene, "template_neuron", text="Template neuron")        
         box.row().prop(context.scene.snnib_props, "voxel_size", text="Voxel Size")
         box.separator()
         box.row().label(text="Axons")
@@ -47,9 +48,6 @@ class SNNIB_PT_Panel(bpy.types.Panel):
         box = layout.box()
         box.row().label(text="Random network")
         box.row().prop(context.scene.snnib_props, "seed")
-        row = box.row()
-        
-        row.column().prop(scene, "template_neuron", text="Template neuron")
         row = box.row()
         row.column().prop(context.scene.snnib_props, "n_neurons")
         row.column().prop(context.scene.snnib_props, "p_synapses")
