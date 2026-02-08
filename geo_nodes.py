@@ -1,6 +1,12 @@
 """custom geo node node groups
 
 - naming pattern: Snnib<Name>
+
+
+TODO:
+    - neuron_axon():
+        - add set_shade_smooth
+        - add_smooth_geometry
 """
 
 #%%imports
@@ -190,6 +196,7 @@ def neuron_axon():
 
     n_noise_tex1 = node_group.nodes.new(type="ShaderNodeTexNoise")
     n_noise_tex1.location = (xpos_n + 200, 000)
+    n_noise_tex1.noise_dimensions = '4D'
     n_noise_tex1.parent = frame_n
 
     n_m_mult1 = node_group.nodes.new(type="ShaderNodeMath")
@@ -228,7 +235,7 @@ def neuron_axon():
 
     n_noise_tex2 = node_group.nodes.new(type="ShaderNodeTexNoise")
     n_noise_tex2.location = (xpos+600, ypos-200)
-    n_noise_tex2.noise_dimensions = '4D'        
+    n_noise_tex2.noise_dimensions = '4D'
     n_noise_tex2.parent = frame_s_bends        
 
     n_map_range2 = node_group.nodes.new(type="ShaderNodeMapRange")

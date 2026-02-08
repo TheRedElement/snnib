@@ -213,8 +213,9 @@ class Network:
             neuron_gn = utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
             neuron_gn = [mod for mod in neuron_obj.modifiers if mod.type == 'NODES'][0]     #first geonodes modifier of the template object
 
-            neuron_gn["Socket_1"] = axon_obj                   #not sure why `Socket_1`
-            neuron_gn["Socket_2"] = self.network_container     #not sure why `Socket_2`
+            neuron_gn["Socket_1"] = axon_obj
+            neuron_gn["Socket_2"] = self.network_container
+            neuron_gn["Socket_3"] = template_obj.material_slots[0].material
                         
             #parenting
             axon_obj.parent = neuron_obj
