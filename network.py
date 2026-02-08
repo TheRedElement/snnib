@@ -105,11 +105,9 @@ class Network:
         """
                 
         #generate neurons at random locations
-        min = np.array([v.co for v in self.network_container.data.vertices]).min(axis=0)
-        max = np.array([v.co for v in self.network_container.data.vertices]).max(axis=0)
-
-        coords = self.Rng.random((self.n_neurons,3)) * (max - min) + min
-
+        coords = utils.random.random_points_bbox(self.network_container, self.Rng, self.n_neurons)
+        #TODO (actual inside): coords = utils.random.random_points_raycast(self.network_container, self.Rng, self.n_neurons)
+        
         #generate random synapses
         synapses = self.Rng.random((self.n_neurons,self.n_neurons))         #synapse weight
         synapses *= (self.Rng.random(synapses.shape) < self.p_synapses)     #connection probability
