@@ -95,6 +95,12 @@ def neuron_axon():
         in_out='INPUT',
         socket_type='NodeSocketObject'
     )
+    container_in = node_group.interface.new_socket(
+        name="Neuron Material",
+        description="Material of combined neuron  and axon",
+        in_out='INPUT',
+        socket_type='NodeSocketMaterial'
+    )
     neuron_out = node_group.interface.new_socket(
         name="Neuron",
         description="Neuron inluding axon",
@@ -106,7 +112,7 @@ def neuron_axon():
     n_group_input_1 = node_group.nodes.new(type="NodeGroupInput")
     n_group_input_1.location = (000, 100)
     n_group_output_1 = node_group.nodes.new(type="NodeGroupOutput")
-    n_group_output_1.location = (3400, 0)
+    n_group_output_1.location = (4200, 0)
 
     ##control values
     frame_c = node_group.nodes.new(type="NodeFrame")
@@ -121,20 +127,54 @@ def neuron_axon():
 
     n_axon_ref_width = node_group.nodes.new(type="ShaderNodeValue")
     n_axon_ref_width.label = "Axon.ReferenceWidth"
-    n_axon_ref_width.location = (000, -300)
+    n_axon_ref_width.location = (000, -200)
     n_axon_ref_width.outputs[0].default_value = 0.2
     n_axon_ref_width.parent = frame_c
 
+    n_voxel_size = node_group.nodes.new(type="ShaderNodeValue")
+    n_voxel_size.label = "Network.VoxelSize"
+    n_voxel_size.location = (000, -300)
+    n_voxel_size.outputs[0].default_value = 0.1
+    n_voxel_size.parent = frame_c
+
+    n_threshold = node_group.nodes.new(type="ShaderNodeValue")
+    n_threshold.label = "Network.VoxelThreshold"
+    n_threshold.location = (000, -400)
+    n_threshold.outputs[0].default_value = 0.2
+    n_threshold.parent = frame_c
+    
     n_axon_res = node_group.nodes.new(type="FunctionNodeInputInt")
     n_axon_res.label = "Axon.Resolution"
     n_axon_res.location = (000, -500)
     n_axon_res.integer = 10
     n_axon_res.parent = frame_c
-
+    
     ##global
     n_join_geo = node_group.nodes.new(type="GeometryNodeJoinGeometry")
-    n_join_geo.location = (3200, 0)        
-
+    n_join_geo.location = (3200, 0)
+    
+    ##remesh
+    xpos_rm = 3400
+    frame_rm = node_group.nodes.new(type="NodeFrame")
+    frame_rm.label = "Neuron.Remesh"
+    frame_rm.location = (0,0)
+    
+    n_mesh2grid = node_group.nodes.new(type="GeometryNodeMeshToSDFGrid")
+    n_mesh2grid.location = (xpos_rm, 0)
+    n_mesh2grid.parent = frame_rm
+    
+    n_voxelize = node_group.nodes.new(type="GeometryNodeGridVoxelize")
+    n_voxelize.location = (xpos_rm+200, 0)
+    n_voxelize.parent = frame_rm
+    
+    n_grid2mesh = node_group.nodes.new(type="GeometryNodeGridToMesh")
+    n_grid2mesh.location = (xpos_rm+400, 0)
+    n_grid2mesh.parent = frame_rm
+    
+    ##apply material
+    n_set_material = node_group.nodes.new(type="GeometryNodeSetMaterial")
+    n_set_material.location = (xpos_rm+600, 0)
+    
     ########
     #neuron#
     ########
@@ -267,8 +307,18 @@ def neuron_axon():
     node_group.links.new(n_bsnn_pos_glob1.outputs["Global Position"], n_noise_tex1.inputs[0])
     node_group.links.new(n_noise_tex1.outputs["Color"], n_m_mult1.inputs[0])
     node_group.links.new(n_m_mult1.outputs["Value"], n_bsnn_scale_rad1.inputs[1])
-    node_group.links.new(n_bsnn_scale_rad1.outputs["Geometry"], n_join_geo.inputs[0])        
-    node_group.links.new(n_join_geo.outputs["Geometry"], n_group_output_1.inputs[0])        
+    node_group.links.new(n_bsnn_scale_rad1.outputs["Geometry"], n_join_geo.inputs[0])
+    #node_group.links.new(n_join_geo.outputs["Geometry"], n_group_output_1.inputs[0])
+    node_group.links.new(n_join_geo.outputs["Geometry"], n_mesh2grid.inputs["Mesh"])
+    node_group.links.new(n_mesh2grid.outputs[0], n_voxelize.inputs["Grid"])
+    node_group.links.new(n_voxelize.outputs["Grid"], n_grid2mesh.inputs["Grid"])
+    node_group.links.new(n_grid2mesh.outputs["Mesh"], n_set_material.inputs["Geometry"])
+    node_group.links.new(n_set_material.outputs[0], n_group_output_1.inputs["Neuron"])
+    
+    node_group.links.new(n_voxel_size.outputs[0], n_mesh2grid.inputs["Voxel Size"])
+    node_group.links.new(n_threshold.outputs[0], n_grid2mesh.inputs["Threshold"])
+    node_group.links.new(n_group_input_1.outputs["Neuron Material"], n_set_material.inputs["Material"])
+    
     ###axons
     node_group.links.new(n_group_input_1.outputs["Axon Curve"], n_obj_info1.inputs["Object"])
     node_group.links.new(n_obj_info1.outputs["Geometry"], n_res_curve1.inputs["Curve"])

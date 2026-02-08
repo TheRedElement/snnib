@@ -183,8 +183,10 @@ class Network:
             #instanciation
             neuron_obj = bpy.data.objects.new(neuron_idx, template_obj.data)
             neuron_obj.location = self.coords[n]
-            self.neuron_objects.append(neuron_obj)
             
+            #add to network neurons
+            self.neuron_objects.append(neuron_obj)            
+
             ######
             #AXON#
             ######
@@ -213,11 +215,7 @@ class Network:
 
             neuron_gn["Socket_1"] = axon_obj                   #not sure why `Socket_1`
             neuron_gn["Socket_2"] = self.network_container     #not sure why `Socket_2`
-            
-            #add remesh modifier to merge geometry
-            neuron_remesh = neuron_obj.modifiers.new(f"Remesh_{neuron_obj.name}", 'REMESH')
-            neuron_remesh.voxel_size = self.voxel_size
-        
+                        
             #parenting
             axon_obj.parent = neuron_obj
             neuron_obj.parent = self.network_container
