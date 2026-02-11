@@ -69,6 +69,7 @@ modules = (
 )
 
 ignore_modules = (geo_nodes,)
+ignore_modules = []
 
 #%%registering
 def register():

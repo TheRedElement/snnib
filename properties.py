@@ -43,8 +43,8 @@ class SnnibProperties(bpy.types.PropertyGroup):
     )    
     synapse_resolution: bpy.props.IntProperty(
         name="Synapse Resolution",
-        default=3,
-        min=0,
+        default=4,
+        min=4,
     ) 
     voxel_size: bpy.props.FloatProperty(
         name="Voxel Size",

@@ -189,10 +189,10 @@ def neuron_axon():
     frame_n.label = "Neuron"
     frame_n.location = (0,0)
 
-    n_bsnn_pos_glob1 = node_group.nodes.new(type="GeometryNodeGroup")
-    n_bsnn_pos_glob1.node_tree = bpy.data.node_groups["BsnnPositionGlobal"]
-    n_bsnn_pos_glob1.location = (xpos_n, 000)
-    n_bsnn_pos_glob1.parent = frame_n
+    n_snnib_pos_glob1 = node_group.nodes.new(type="GeometryNodeGroup")
+    n_snnib_pos_glob1.node_tree = bpy.data.node_groups["SnnibPositionGlobal"]
+    n_snnib_pos_glob1.location = (xpos_n, 000)
+    n_snnib_pos_glob1.parent = frame_n
 
     n_noise_tex1 = node_group.nodes.new(type="ShaderNodeTexNoise")
     n_noise_tex1.location = (xpos_n + 200, 000)
@@ -204,10 +204,10 @@ def neuron_axon():
     n_m_mult1.location = (xpos_n+400, 000)
     n_m_mult1.parent = frame_n        
 
-    n_bsnn_scale_rad1 = node_group.nodes.new(type="GeometryNodeGroup")
-    n_bsnn_scale_rad1.node_tree = bpy.data.node_groups["BsnnScaleRadial"]
-    n_bsnn_scale_rad1.location = (xpos_n+600, 000)
-    n_bsnn_scale_rad1.parent = frame_n        
+    n_snnib_scale_rad1 = node_group.nodes.new(type="GeometryNodeGroup")
+    n_snnib_scale_rad1.node_tree = bpy.data.node_groups["SnnibScaleRadial"]
+    n_snnib_scale_rad1.location = (xpos_n+600, 000)
+    n_snnib_scale_rad1.parent = frame_n        
 
     #################
     #Axon + Synapses#
@@ -309,12 +309,12 @@ def neuron_axon():
 
     ##add links
     ###neurons
-    node_group.links.new(n_group_input_1.outputs["Neuron Object"], n_bsnn_scale_rad1.inputs[0])
+    node_group.links.new(n_group_input_1.outputs["Neuron Object"], n_snnib_scale_rad1.inputs[0])
     node_group.links.new(n_neuron_surface_rand.outputs[0], n_m_mult1.inputs[1])
-    node_group.links.new(n_bsnn_pos_glob1.outputs["Global Position"], n_noise_tex1.inputs[0])
+    node_group.links.new(n_snnib_pos_glob1.outputs["Global Position"], n_noise_tex1.inputs[0])
     node_group.links.new(n_noise_tex1.outputs["Color"], n_m_mult1.inputs[0])
-    node_group.links.new(n_m_mult1.outputs["Value"], n_bsnn_scale_rad1.inputs[1])
-    node_group.links.new(n_bsnn_scale_rad1.outputs["Geometry"], n_join_geo.inputs[0])
+    node_group.links.new(n_m_mult1.outputs["Value"], n_snnib_scale_rad1.inputs[1])
+    node_group.links.new(n_snnib_scale_rad1.outputs["Geometry"], n_join_geo.inputs[0])
     #node_group.links.new(n_join_geo.outputs["Geometry"], n_group_output_1.inputs[0])
     node_group.links.new(n_join_geo.outputs["Geometry"], n_mesh2grid.inputs["Mesh"])
     node_group.links.new(n_mesh2grid.outputs[0], n_voxelize.inputs["Grid"])
@@ -472,10 +472,13 @@ def scale_radial():
 
 #%%registration
 def register():
+    #independent
+    position_global()
+    scale_radial()    
+
+    #dependent
     network_container()
     neuron_axon()
-    position_global()
-    scale_radial()
     
 
 def unregister():
