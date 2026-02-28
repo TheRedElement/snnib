@@ -46,30 +46,34 @@ bl_info = {
     "category": "3D View",
 }
 
-#%%imports
+#%%constants
+DEV:bool = True    #whether to run in dev mode
 
+
+#%%imports
 import bpy  #always first
 
 import importlib
 
 #submodules
 from . import (
-    network,
+    # network,
     geo_nodes,
-    opreators,
-    panels,
-    properties,
+    # opreators,
+    # panels,
+    # properties,
 )
 modules = (
-    network,
+    # network,
     geo_nodes,
-    opreators,
-    panels,
-    properties,
+    # opreators,
+    # panels,
+    # properties,
 )
 
-ignore_modules = (geo_nodes,)
+# ignore_modules = (geo_nodes,)
 ignore_modules = []
+
 
 #%%registering
 def register():
