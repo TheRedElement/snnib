@@ -265,7 +265,7 @@ def neurite_branches():
     twist_in.default_value = 14
     
     bend_strength_in = node_group.interface.new_socket(
-        name="Bend",
+        name="Strength",
         description="Strength of the random bends of the generated neurite",
         in_out='INPUT',
         socket_type='NodeSocketFloat',
@@ -297,7 +297,7 @@ def neurite_branches():
     resolution_profile_in.default_value = 16
     
     neuron_out = node_group.interface.new_socket(
-        name="Host Mesh",
+        name="Mesh",
         description="`Host Mesh` including neurite branches",
         in_out='OUTPUT',
         socket_type='NodeSocketGeometry'
@@ -327,9 +327,11 @@ def neurite_branches():
     n_instance_on_points.location = (x0+400, y0-0)
     
     n_realize_instances = node_group.nodes.new(type="GeometryNodeRealizeInstances")
+    n_realize_instances.inputs["Depth"].default_value = 2
     n_realize_instances.location = (x0+600, y0-000)
         
     n_resample_curve = node_group.nodes.new(type="GeometryNodeResampleCurve")
+    n_resample_curve.inputs["Mode"].default_value = 'Length'
     n_resample_curve.location = (x0+800, y0-0)
     
     n_snnib_neur_twist = node_group.nodes.new(type="GeometryNodeGroup")
@@ -340,20 +342,46 @@ def neurite_branches():
     n_snnib_neur_bends.node_tree = bpy.data.node_groups["SnnibNeuriteBends"]
     n_snnib_neur_bends.location = (x0+1200, y0)
     
-    n_snnib_neur_curve_shape = node_group.nodes.new(type="GeometryNodeGroup")
-    n_snnib_neur_curve_shape.node_tree = bpy.data.node_groups["SnnibNeuriteCurveShape"]
-    n_snnib_neur_curve_shape.location = (x0+1400, y0)
+    n_snnib_neur_to_mesh = node_group.nodes.new(type="GeometryNodeGroup")
+    n_snnib_neur_to_mesh.node_tree = bpy.data.node_groups["SnnibNeuriteToMesh"]
+    n_snnib_neur_to_mesh.location = (x0+1400, y0)
+
+    #connect
+    ##group inputs
+    node_group.links.new(n_group_input_1.outputs["Host Mesh"], n_points_on_faces.inputs["Mesh"])
+    node_group.links.new(n_group_input_1.outputs["Density"], n_points_on_faces.inputs["Density"])
+    node_group.links.new(n_group_input_1.outputs["Seed"], n_points_on_faces.inputs["Seed"])
+    node_group.links.new(n_group_input_1.outputs["Length.Min"], n_rand_float.inputs["Min"])
+    node_group.links.new(n_group_input_1.outputs["Length.Max"], n_rand_float.inputs["Max"])
+    node_group.links.new(n_group_input_1.outputs["Seed"], n_rand_float.inputs["Seed"])
+    node_group.links.new(n_group_input_1.outputs["Resolution"], n_resample_curve.inputs["Length"])
+    node_group.links.new(n_group_input_1.outputs["Twist"], n_snnib_neur_twist.inputs["Twist"])
+    node_group.links.new(n_group_input_1.outputs["Strength"], n_snnib_neur_bends.inputs["Strength"])
+    node_group.links.new(n_group_input_1.outputs["Scale"], n_snnib_neur_bends.inputs["Scale"])
+    node_group.links.new(n_group_input_1.outputs["Diameter"], n_snnib_neur_to_mesh.inputs["Diameter"])
+    node_group.links.new(n_group_input_1.outputs["Profile Resolution"], n_snnib_neur_to_mesh.inputs["Profile Resolution"])
+
+    ##main nodes
+    node_group.links.new(n_points_on_faces.outputs["Points"], n_instance_on_points.inputs["Points"])
+    node_group.links.new(n_points_on_faces.outputs["Rotation"], n_instance_on_points.inputs["Rotation"])
+    node_group.links.new(n_curve_line.outputs["Curve"], n_instance_on_points.inputs["Instance"])
+    node_group.links.new(n_rand_float.outputs["Value"], n_instance_on_points.inputs["Scale"])
+    node_group.links.new(n_instance_on_points.outputs["Instances"], n_realize_instances.inputs["Geometry"])
+    node_group.links.new(n_realize_instances.outputs["Geometry"], n_resample_curve.inputs["Curve"])
+    node_group.links.new(n_resample_curve.outputs["Curve"], n_snnib_neur_twist.inputs["Curve"])
+    node_group.links.new(n_snnib_neur_twist.outputs["Curve"], n_snnib_neur_bends.inputs["Curve"])
+    node_group.links.new(n_snnib_neur_bends.outputs["Curve"], n_snnib_neur_to_mesh.inputs["Curve"])
+    node_group.links.new(n_snnib_neur_to_mesh.outputs["Mesh"], n_group_output_1.inputs["Mesh"])
+
 
     return
 
-def neurite_curve_shape():
-    """creates a set of branches in random directions originating at `Host Mesh`
-
-    - used to procedurally generate non-connections
+def neurite_to_mesh():
+    """converts some input neurite (curve) to a mesh
     """
     
     #group attributes    
-    group_name = "SnnibNeuriteCurveShape"
+    group_name = "SnnibNeuriteToMesh"
 
     #creation
     node_group = utils.geo_nodes_utils.create_node_group(group_name, dev=DEV)
@@ -394,11 +422,48 @@ def neurite_curve_shape():
     n_group_input_1 = node_group.nodes.new(type="NodeGroupInput")
     n_group_input_1.location = (x0+0, y0+0)
     n_group_output_1 = node_group.nodes.new(type="NodeGroupOutput")
-    n_group_output_1.location = (x0+800, y0+0)
+    n_group_output_1.location = (x0+1400, y0+0)
 
     #generator nodes
     x0, y0 = 200, 0
-    utils.geo_nodes_utils.add_todo_node(node_group, (200,0))
+    # utils.geo_nodes_utils.add_todo_node(node_group, (200,0))
+
+    n_spline_param = node_group.nodes.new(type="GeometryNodeSplineParameter")
+    n_spline_param.location = (x0, y0-200)
+
+    n_m_sub = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_sub.operation = 'SUBTRACT'
+    n_m_sub.inputs[0].default_value = 1.0
+    n_m_sub.location = (x0+200, y0-200)
+    
+    n_rgb_curve = node_group.nodes.new(type="ShaderNodeRGBCurve")
+    n_rgb_curve.location = (x0+400, y0-200)
+    points = [[0.0,0.15],[0.02,0.85],[0.05,0.20],[1.0,1.0]]
+    handle_types = ['AUTO','AUTO_CLAMPED','AUTO','AUTO']
+    utils.geo_nodes_utils.set_node_curve(n_rgb_curve, 3, points, handle_types)
+    n_rgb_curve.mapping.update()
+
+    n_m_mult = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_mult.operation = 'MULTIPLY'
+    n_m_mult.location = (x0+800, y0-200)
+
+    n_curve_circ = node_group.nodes.new(type="GeometryNodeCurvePrimitiveCircle")
+    n_curve_circ.location = (x0+800, y0-100)
+    n_curve_circ.hide = True
+    
+    n_curve_to_mesh = node_group.nodes.new(type="GeometryNodeCurveToMesh")
+    n_curve_to_mesh.inputs["Fill Caps"].default_value = True
+    n_curve_to_mesh.location = (x0+1000, y0-0)
+    
+    node_group.links.new(n_group_input_1.outputs["Curve"], n_curve_to_mesh.inputs["Curve"])
+    node_group.links.new(n_group_input_1.outputs["Diameter"], n_m_mult.inputs[0])
+    node_group.links.new(n_group_input_1.outputs["Profile Resolution"], n_curve_circ.inputs["Resolution"])
+    node_group.links.new(n_spline_param.outputs["Factor"], n_m_sub.inputs[1])
+    node_group.links.new(n_m_sub.outputs["Value"], n_rgb_curve.inputs["Color"])
+    node_group.links.new(n_rgb_curve.outputs["Color"], n_m_mult.inputs[1])
+    node_group.links.new(n_m_mult.outputs["Value"], n_curve_to_mesh.inputs["Scale"])
+    node_group.links.new(n_curve_circ.outputs["Curve"], n_curve_to_mesh.inputs["Profile Curve"])
+    node_group.links.new(n_curve_to_mesh.outputs["Mesh"], n_group_output_1.inputs["Mesh"])
 
 
     return
@@ -1041,7 +1106,7 @@ def scale_radial():
 #%%registration
 def register():
     #independent
-    neurite_curve_shape()
+    neurite_to_mesh()
     neurite_bends()
     neurite_twist()
     position_global()
