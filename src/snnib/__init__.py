@@ -67,7 +67,7 @@ from . import (
 modules = (
     # network,
     geo_nodes,
-    shader_nodes,
+    shader_nodes,   #NOTE: might have to be loaded BEFORE `geo_nodes`
     # opreators,
     # panels,
     # properties,
