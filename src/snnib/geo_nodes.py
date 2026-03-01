@@ -723,12 +723,16 @@ def neuron_neurites():
     n_repeat_in.parent = frame_d
     n_repeat_out = node_group.nodes.new(type="GeometryNodeRepeatOutput")
     n_repeat_out.location = (x0+1400, y0+0)
-    n_repeat_out.repeat_items.new("FLOAT", "Diameter")
     n_repeat_out.repeat_items.new("FLOAT", "Density")
+    n_repeat_out.repeat_items.new("FLOAT", "Length.Min")
+    n_repeat_out.repeat_items.new("FLOAT", "Length.Max")
+    n_repeat_out.repeat_items.new("FLOAT", "Diameter")
     n_repeat_out.parent = frame_d
     n_repeat_in.pair_with_output(n_repeat_out)  #create pair
-    n_repeat_in.inputs["Diameter"].default_value = 0.03
     n_repeat_in.inputs["Density"].default_value = 2.0
+    n_repeat_in.inputs["Length.Min"].default_value = 0.1
+    n_repeat_in.inputs["Length.Max"].default_value = 3.0
+    n_repeat_in.inputs["Diameter"].default_value = 0.03
 
     n_snnib_neur_branches2 = node_group.nodes.new(type="GeometryNodeGroup")
     n_snnib_neur_branches2.node_tree = bpy.data.node_groups["SnnibNeuriteBranches"]
@@ -739,11 +743,31 @@ def neuron_neurites():
     n_join_geo2.location = (x0+1000, y0)
 
     ###updates
-    n_m_mult = node_group.nodes.new(type="ShaderNodeMath")
-    n_m_mult.operation = "MULTIPLY"
-    n_m_mult.inputs[1].default_value = 0.5
-    n_m_mult.location = (x0+800, y0-400)
-    n_m_mult.parent = frame_d
+    frame_ud = node_group.nodes.new(type="NodeFrame")
+    frame_ud.label = "Updates"
+    frame_ud.location = (0,0)
+    frame_ud.parent = frame_d
+
+    n_m_mult1 = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_mult1.operation = "MULTIPLY"
+    n_m_mult1.inputs[1].default_value = 0.5
+    n_m_mult1.location = (x0+800, y0-400)
+    n_m_mult1.parent = frame_ud
+    n_m_mult1.hide = True
+
+    n_m_mult2 = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_mult2.operation = "MULTIPLY"
+    n_m_mult2.inputs[1].default_value = 0.8
+    n_m_mult2.location = (x0+800, y0-450)
+    n_m_mult2.parent = frame_ud
+    n_m_mult2.hide = True
+
+    n_m_mult3 = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_mult3.operation = "MULTIPLY"
+    n_m_mult3.inputs[1].default_value = 0.8
+    n_m_mult3.location = (x0+800, y0-500)
+    n_m_mult3.parent = frame_ud
+    n_m_mult3.hide = True
 
     node_group.links.new(n_snnib_neur_branches1.outputs["Mesh"], n_join_geo1.inputs["Geometry"])
     node_group.links.new(n_join_geo1.outputs["Geometry"], n_repeat_in.inputs["Geometry"])
@@ -756,10 +780,16 @@ def neuron_neurites():
     node_group.links.new(n_dendrite_resolution.outputs["Value"], n_snnib_neur_branches1.inputs["Resolution"])
     node_group.links.new(n_repeat_in.outputs["Geometry"], n_join_geo2.inputs["Geometry"])
     node_group.links.new(n_dendrite_diameter_scale.outputs["Value"], n_snnib_neur_branches1.inputs["Diameter"])
-    node_group.links.new(n_repeat_in.outputs["Diameter"], n_m_mult.inputs[0])
-    node_group.links.new(n_repeat_in.outputs["Diameter"], n_snnib_neur_branches2.inputs["Diameter"])
+    node_group.links.new(n_repeat_in.outputs["Length.Min"], n_m_mult1.inputs[0])
+    node_group.links.new(n_repeat_in.outputs["Length.Max"], n_m_mult2.inputs[0])
+    node_group.links.new(n_repeat_in.outputs["Diameter"], n_m_mult3.inputs[0])
     node_group.links.new(n_repeat_in.outputs["Density"], n_snnib_neur_branches2.inputs["Density"])
-    node_group.links.new(n_m_mult.outputs["Value"], n_repeat_out.inputs["Diameter"])
+    node_group.links.new(n_repeat_in.outputs["Length.Min"], n_snnib_neur_branches2.inputs["Length.Min"])
+    node_group.links.new(n_repeat_in.outputs["Length.Max"], n_snnib_neur_branches2.inputs["Length.Max"])
+    node_group.links.new(n_repeat_in.outputs["Diameter"], n_snnib_neur_branches2.inputs["Diameter"])
+    node_group.links.new(n_m_mult2.outputs["Value"], n_repeat_out.inputs["Length.Min"])
+    node_group.links.new(n_m_mult3.outputs["Value"], n_repeat_out.inputs["Length.Max"])
+    node_group.links.new(n_m_mult1.outputs["Value"], n_repeat_out.inputs["Diameter"])
     
     #-------------------------------------------------------------
     #axon
@@ -781,18 +811,14 @@ def neuron_neurites():
     n_snnib_neur_twist = node_group.nodes.new(type="GeometryNodeGroup")
     n_snnib_neur_twist.node_tree = bpy.data.node_groups["SnnibNeuriteTwist"]
     n_snnib_neur_twist.location = (x0+400, y0-0)
+    n_snnib_neur_twist.inputs["Twist"].default_value = 8.0
     n_snnib_neur_twist.parent = frame_ax
     
     n_snnib_neur_bends = node_group.nodes.new(type="GeometryNodeGroup")
     n_snnib_neur_bends.node_tree = bpy.data.node_groups["SnnibNeuriteBends"]
     n_snnib_neur_bends.location = (x0+600, y0-0)
+    n_snnib_neur_bends.inputs["Scale"].default_value = 0.4
     n_snnib_neur_bends.parent = frame_ax
-    
-    n_m_mult = node_group.nodes.new(type="ShaderNodeMath")
-    n_m_mult.operation = 'MULTIPLY'
-    n_m_mult.inputs[1].default_value = 3.0
-    n_m_mult.location = (x0+600, y0-200)
-    n_m_mult.parent = frame_ax
     
     n_snnib_neur_to_mesh = node_group.nodes.new(type="GeometryNodeGroup")
     n_snnib_neur_to_mesh.node_tree = bpy.data.node_groups["SnnibNeuriteToMesh"]
@@ -812,12 +838,11 @@ def neuron_neurites():
 
     node_group.links.new(n_group_input_1.outputs["Axon Curve"], n_obj_info.inputs["Object"])
     node_group.links.new(n_axon_resolution.outputs["Value"], n_res_curve.inputs["Length"])
-    node_group.links.new(n_axon_diameter_scale.outputs["Value"], n_m_mult.inputs[0])
+    node_group.links.new(n_axon_diameter_scale.outputs["Value"], n_snnib_neur_to_mesh.inputs["Diameter"])
     node_group.links.new(n_obj_info.outputs["Geometry"], n_res_curve.inputs["Curve"])
     node_group.links.new(n_res_curve.outputs["Curve"], n_snnib_neur_twist.inputs["Curve"])
     node_group.links.new(n_snnib_neur_twist.outputs["Curve"], n_snnib_neur_bends.inputs["Curve"])
     node_group.links.new(n_snnib_neur_bends.outputs["Curve"], n_snnib_neur_to_mesh.inputs["Curve"])
-    node_group.links.new(n_m_mult.outputs["Value"], n_snnib_neur_to_mesh.inputs["Diameter"])
     node_group.links.new(n_snnib_neur_to_mesh.outputs["Mesh"], n_trans_geo.inputs["Geometry"])
     node_group.links.new(n_comb_xyz.outputs["Vector"], n_trans_geo.inputs["Scale"])
     node_group.links.new(n_trans_geo.outputs["Geometry"], n_join_geo1.inputs["Geometry"])
