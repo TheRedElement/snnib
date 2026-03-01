@@ -59,6 +59,7 @@ import importlib
 from . import (
     # network,
     geo_nodes,
+    shader_nodes,
     # opreators,
     # panels,
     # properties,
@@ -66,6 +67,7 @@ from . import (
 modules = (
     # network,
     geo_nodes,
+    shader_nodes,
     # opreators,
     # panels,
     # properties,
