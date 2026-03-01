@@ -534,14 +534,14 @@ def neurite_twist():
 
     return
 
-def neuron_axon():
+def neuron_neurites():
     """creates template geonodes node group for defining neurons and axons
     
     - this group is used to make created networks customizable in an intuitive manner 
     """
     
     #group attributes    
-    group_name = "SnnibNeuronAxon"
+    group_name = "SnnibNeuronNeurites"
 
     #creation
     node_group = utils.geo_nodes_utils.create_node_group(group_name, dev=DEV)
@@ -628,22 +628,34 @@ def neuron_axon():
     n_spiketrain_stretch.parent = frame_cst
     
     frame_ca = node_group.nodes.new(type="NodeFrame")
-    frame_ca.label = "Axon"
+    frame_ca.label = "Neurites"
     frame_ca.location = (0,0)
     frame_ca.parent = frame_c     
+    
+    n_dendrite_diameter_scale = node_group.nodes.new(type="ShaderNodeValue")
+    n_dendrite_diameter_scale.label = "Dendrite.Diameter.Scale"
+    n_dendrite_diameter_scale.location = (x0+0, y0-700)
+    n_dendrite_diameter_scale.outputs[0].default_value = 0.1
+    n_dendrite_diameter_scale.parent = frame_ca
 
+    n_dendrite_resolution = node_group.nodes.new(type="ShaderNodeValue")
+    n_dendrite_resolution.label = "Dendrite.Resolution"
+    n_dendrite_resolution.location = (x0+0, y0-800)
+    n_dendrite_resolution.outputs[0].default_value = 0.1
+    n_dendrite_resolution.parent = frame_ca
+    
     n_axon_diameter_scale = node_group.nodes.new(type="ShaderNodeValue")
     n_axon_diameter_scale.label = "Axon.Diameter.Scale"
-    n_axon_diameter_scale.location = (x0+0, y0-700)
-    n_axon_diameter_scale.outputs[0].default_value = 0.1
+    n_axon_diameter_scale.location = (x0+0, y0-900)
+    n_axon_diameter_scale.outputs[0].default_value = 0.3
     n_axon_diameter_scale.parent = frame_ca
 
     n_axon_resolution = node_group.nodes.new(type="ShaderNodeValue")
     n_axon_resolution.label = "Axon.Resolution"
-    n_axon_resolution.location = (x0+0, y0-800)
+    n_axon_resolution.location = (x0+0, y0-1000)
     n_axon_resolution.outputs[0].default_value = 0.1
     n_axon_resolution.parent = frame_ca
-    
+
     #-------------------------------------------------------------
     #neuron body
     x0 = 300
@@ -741,9 +753,9 @@ def neuron_axon():
 
 
     node_group.links.new(n_group_input_1.outputs["Neuron Object"], n_snnib_neur_branches1.inputs["Host Mesh"])
-    node_group.links.new(n_axon_resolution.outputs["Value"], n_snnib_neur_branches1.inputs["Resolution"])
+    node_group.links.new(n_dendrite_resolution.outputs["Value"], n_snnib_neur_branches1.inputs["Resolution"])
     node_group.links.new(n_repeat_in.outputs["Geometry"], n_join_geo2.inputs["Geometry"])
-    node_group.links.new(n_axon_diameter_scale.outputs["Value"], n_snnib_neur_branches1.inputs["Diameter"])
+    node_group.links.new(n_dendrite_diameter_scale.outputs["Value"], n_snnib_neur_branches1.inputs["Diameter"])
     node_group.links.new(n_repeat_in.outputs["Diameter"], n_m_mult.inputs[0])
     node_group.links.new(n_repeat_in.outputs["Diameter"], n_snnib_neur_branches2.inputs["Diameter"])
     node_group.links.new(n_repeat_in.outputs["Density"], n_snnib_neur_branches2.inputs["Density"])
@@ -816,9 +828,43 @@ def neuron_axon():
     x0, y0 = 2200, 0
     n_join_geo = node_group.nodes.new(type="GeometryNodeJoinGeometry")
     n_join_geo.location = (x0, y0)
+    
+    n_snnib_remesh = node_group.nodes.new(type="GeometryNodeGroup")
+    n_snnib_remesh.node_tree = bpy.data.node_groups["SnnibRemesh"]
+    n_snnib_remesh.location = (x0+200, y0-0)
+    n_snnib_remesh.mute = True
+
+    n_snnib_spiketrain = node_group.nodes.new(type="GeometryNodeGroup")
+    n_snnib_spiketrain.node_tree = bpy.data.node_groups["SnnibSpiketrain"]
+    n_snnib_spiketrain.location = (x0+400, y0+200)
+    
+    n_store_attr = node_group.nodes.new(type="GeometryNodeStoreNamedAttribute")
+    n_store_attr.data_type = 'FLOAT_COLOR'
+    n_store_attr.inputs["Name"].default_value = "Spiketrain.Texture"
+    n_store_attr.location = (x0+600, y0)
+
+    n_set_mat = node_group.nodes.new(type="GeometryNodeSetMaterial")
+    n_set_mat.location = (x0+800, y0)
+    n_set_mat.parent = utils.geo_nodes_utils.add_todo_node(node_group)
+
+    n_shade_smooth = node_group.nodes.new(type="GeometryNodeSetShadeSmooth")
+    n_shade_smooth.location = (x0+1000, y0)
+
+
     node_group.links.new(n_snnib_scale_rad.outputs["Geometry"], n_join_geo.inputs["Geometry"])
     node_group.links.new(n_repeat_out.outputs["Geometry"], n_join_geo.inputs["Geometry"])
-    node_group.links.new(n_join_geo.outputs["Geometry"], n_group_output_1.inputs["Neuron"])
+    node_group.links.new(n_join_geo.outputs["Geometry"], n_snnib_remesh.inputs["Geometry"])
+    node_group.links.new(n_snnib_remesh.outputs["Geometry"], n_snnib_spiketrain.inputs["Geometry"])
+    node_group.links.new(n_group_input_1.outputs["Spiketrain"], n_snnib_spiketrain.inputs["Spiketrain"])
+    node_group.links.new(n_spiketrain_offset.outputs["Value"], n_snnib_spiketrain.inputs["Offset"])
+    node_group.links.new(n_spiketrain_stretch.outputs["Value"], n_snnib_spiketrain.inputs["Stretch"])
+    node_group.links.new(n_n_frames.outputs["Value"], n_snnib_spiketrain.inputs["Number of Frames"])
+    node_group.links.new(n_snnib_remesh.outputs["Geometry"], n_store_attr.inputs["Geometry"])
+    node_group.links.new(n_snnib_spiketrain.outputs["Spiketrain"], n_store_attr.inputs["Value"])
+    node_group.links.new(n_store_attr.outputs["Geometry"], n_set_mat.inputs["Geometry"])
+    node_group.links.new(n_set_mat.outputs["Geometry"], n_shade_smooth.inputs["Mesh"])
+    
+    node_group.links.new(n_shade_smooth.outputs["Mesh"], n_group_output_1.inputs["Neuron"])
     
 
     return
@@ -1156,15 +1202,75 @@ def position_global():
 
     return
 
+def remesh():
+    """creates a geometry nodes node group similar to remesh modifier
+    """
+
+    #group attributes    
+    group_name = "SnnibRemesh"
+
+    #creation
+    node_group = utils.geo_nodes_utils.create_node_group(group_name, dev=DEV)
+
+    #define interface
+    geo_in = node_group.interface.new_socket(
+        name="Geometry",
+        description="Geometry to be remeshed",
+        in_out='INPUT',
+        socket_type='NodeSocketGeometry'
+    )
+    voxel_size_in = node_group.interface.new_socket(
+        name="Voxel Size",
+        description="Size to use for the voxels",
+        in_out='INPUT',
+        socket_type='NodeSocketFloat'
+    )
+    voxel_size_in.default_value = 0.03
+    threshold_in = node_group.interface.new_socket(
+        name="Threshold",
+        description="Threshold to use to convert voxelized geometry to mesh",
+        in_out='INPUT',
+        socket_type='NodeSocketFloat'
+    )
+    threshold_in.default_value = 0.03
+    geo_out = node_group.interface.new_socket(
+        name="Geometry",
+        description="geometry after being scaled radially",
+        in_out='OUTPUT',
+        socket_type='NodeSocketGeometry'
+    )
+
+    #add nodes
+    x0, y0 = 0, 0
+    n_group_input_1 = node_group.nodes.new(type="NodeGroupInput")
+    n_group_input_1.location = (x0, y0)
+    n_group_output_1 = node_group.nodes.new(type="NodeGroupOutput")
+    n_group_output_1.location = (800, 0)
+    
+    n_mesh_to_grid = node_group.nodes.new(type="GeometryNodeMeshToSDFGrid")
+    n_mesh_to_grid.location = (x0+200, y0-0)
+    
+    n_voxelize = node_group.nodes.new(type="GeometryNodeGridVoxelize")
+    n_voxelize.location = (x0+400, y0-0)
+    
+    n_grid_to_mesh = node_group.nodes.new(type="GeometryNodeGridToMesh")
+    n_grid_to_mesh.location = (x0+600, y0-0)
+    
+    node_group.links.new(n_group_input_1.outputs["Geometry"], n_mesh_to_grid.inputs["Mesh"])
+    node_group.links.new(n_group_input_1.outputs["Voxel Size"], n_mesh_to_grid.inputs["Voxel Size"])
+    node_group.links.new(n_group_input_1.outputs["Threshold"], n_grid_to_mesh.inputs["Threshold"])
+    node_group.links.new(n_mesh_to_grid.outputs["SDF Grid"], n_voxelize.inputs["Grid"])
+    node_group.links.new(n_voxelize.outputs["Grid"], n_grid_to_mesh.inputs["Grid"])
+    node_group.links.new(n_grid_to_mesh.outputs["Mesh"], n_group_output_1.inputs["Geometry"])
+
+    return
+
 def scale_radial():
     """creates a geometry nodes node group that scales input geometry radially
     """
 
     #group attributes    
     group_name = "SnnibScaleRadial"
-
-    #delete if already existent
-    utils.geo_nodes_utils.delete_geonode_groups(group_name)
 
     #creation
     node_group = utils.geo_nodes_utils.create_node_group(group_name, dev=DEV)
@@ -1221,7 +1327,226 @@ def scale_radial():
 
     return
 
+def spiketrain():
+    """creates a geometry nodes node group to generate colors for spiketrain
 
+    - result stored as attribute
+    """
+
+    #group attributes    
+    group_name = "SnnibSpiketrain"
+
+    #creation
+    node_group = utils.geo_nodes_utils.create_node_group(group_name, dev=DEV)
+
+    #define interface
+    geo_in = node_group.interface.new_socket(
+        name="Geometry",
+        description="Geometry to be remeshed",
+        in_out='INPUT',
+        socket_type='NodeSocketGeometry'
+    )
+    spiketrain_in = node_group.interface.new_socket(
+        name="Spiketrain",
+        description="1d image representing the spiketrain (pixels with values of 0 or 1)",
+        in_out='INPUT',
+        socket_type='NodeSocketImage'
+    )
+    offset_in = node_group.interface.new_socket(
+        name="Offset",
+        description="Offset of the spiketrain",
+        in_out='INPUT',
+        socket_type='NodeSocketInt'
+    )
+    stretch_in = node_group.interface.new_socket(
+        name="Stretch",
+        description="Stretch of the spiketrain",
+        in_out='INPUT',
+        socket_type='NodeSocketFloat'
+    )
+    nframes_in = node_group.interface.new_socket(
+        name="Number of Frames",
+        description="Number of frames in the entire animation",
+        in_out='INPUT',
+        socket_type='NodeSocketInt'
+    )
+    color_out = node_group.interface.new_socket(
+        name="Spiketrain",
+        description="Color representing the spiketrain",
+        in_out='OUTPUT',
+        socket_type='NodeSocketColor'
+    )
+
+    #add nodes
+    x0, y0 = 0, 0
+    n_group_input_1 = node_group.nodes.new(type="NodeGroupInput")
+    n_group_input_1.location = (x0, y0)
+    n_group_output_1 = node_group.nodes.new(type="NodeGroupOutput")
+    n_group_output_1.location = (3000, 0)
+    
+    #-------------------------------------------------------------
+    #r_norm
+    x0, y0 = 200, 0
+    frame_rn = node_group.nodes.new(type="NodeFrame")
+    frame_rn.label = "r_norm \in [0,1]"
+    frame_rn.location = (0,0)
+
+    x0, y0 = 200, 0
+    frame_r = node_group.nodes.new(type="NodeFrame")
+    frame_r.label = "r \in \mathbb{R}"
+    frame_r.location = (0,0)
+    frame_r.parent = frame_rn
+
+    n_pos = node_group.nodes.new(type="GeometryNodeInputPosition")
+    n_pos.location = (x0, y0)
+    n_pos.parent = frame_r
+    
+    n_obj_info = node_group.nodes.new(type="GeometryNodeObjectInfo")
+    n_obj_info.location = (x0, y0-100)
+    n_obj_info.parent = frame_r
+    
+    n_vm_dist1 = node_group.nodes.new(type="ShaderNodeVectorMath")
+    n_vm_dist1.location = (x0+200, y0)
+    n_vm_dist1.operation = "DISTANCE"
+    n_vm_dist1.parent = frame_r
+
+    node_group.links.new(n_pos.outputs["Position"], n_vm_dist1.inputs[0])
+    node_group.links.new(n_obj_info.outputs["Location"], n_vm_dist1.inputs[1])
+
+    x0, y0 = 200, -400
+    frame_ro = node_group.nodes.new(type="NodeFrame")
+    frame_ro.label = "Object radius \in \mathbb{R}"
+    frame_ro.location = (0,0)
+    frame_ro.parent = frame_rn
+
+    n_bound_box = node_group.nodes.new(type="GeometryNodeBoundBox")
+    n_bound_box.location = (x0, y0)
+    n_bound_box.parent = frame_ro
+
+    n_vm_dist2 = node_group.nodes.new(type="ShaderNodeVectorMath")
+    n_vm_dist2.location = (x0+200, y0)
+    n_vm_dist2.operation = "DISTANCE"
+    n_vm_dist2.parent = frame_ro
+    
+    n_m_mult1 = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_mult1.location = (x0+400, y0)
+    n_m_mult1.operation = "MULTIPLY"
+    n_m_mult1.inputs[1].default_value = 0.5
+    n_m_mult1.parent = frame_ro
+
+    node_group.links.new(n_group_input_1.outputs["Geometry"], n_bound_box.inputs["Geometry"])
+    node_group.links.new(n_bound_box.outputs["Min"], n_vm_dist2.inputs[0])
+    node_group.links.new(n_bound_box.outputs["Max"], n_vm_dist2.inputs[1])
+    node_group.links.new(n_vm_dist2.outputs["Value"], n_m_mult1.inputs[0])
+
+    n_m_div1 = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_div1.location = (x0+600, y0+200)
+    n_m_div1.operation = "DIVIDE"
+    n_m_div1.parent = frame_rn
+
+    node_group.links.new(n_vm_dist1.outputs["Value"], n_m_div1.inputs[0])
+    node_group.links.new(n_m_mult1.outputs["Value"], n_m_div1.inputs[1])
+    
+    #-------------------------------------------------------------
+    #time
+    x0, y0 = 200, -700
+    frame_t = node_group.nodes.new(type="NodeFrame")
+    frame_t.label = "Time \in [-1,0]"
+    frame_t.location = (0,0)
+
+    n_scene_time = node_group.nodes.new(type="GeometryNodeInputSceneTime")
+    n_scene_time.location = (x0, y0)
+    n_scene_time.parent = frame_t
+    
+    n_m_div2 = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_div2.location = (x0+200, y0)
+    n_m_div2.operation = "DIVIDE"
+    n_m_div2.parent = frame_t
+    
+    n_m_mult2 = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_mult2.location = (x0+400, y0)
+    n_m_mult2.operation = "MULTIPLY"
+    n_m_mult2.inputs[1].default_value = -1.0
+    n_m_mult2.parent = frame_t
+
+    node_group.links.new(n_scene_time.outputs["Frame"], n_m_div2.inputs[0])
+    node_group.links.new(n_group_input_1.outputs["Number of Frames"], n_m_div2.inputs[1])
+    node_group.links.new(n_m_div2.outputs["Value"], n_m_mult2.inputs[0])
+
+    #-------------------------------------------------------------
+    #offset
+    x0, y0 = 900, -400
+    frame_os = node_group.nodes.new(type="NodeFrame")
+    frame_os.label = "Offset"
+    frame_os.location = (0,0)
+
+    n_m_div3 = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_div3.location = (x0+200, y0)
+    n_m_div3.operation = "DIVIDE"
+    n_m_div3.parent = frame_os
+    
+    n_m_sub = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_sub.location = (x0+400, y0)
+    n_m_sub.operation = "SUBTRACT"
+    n_m_sub.parent = frame_os
+
+    node_group.links.new(n_group_input_1.outputs["Offset"], n_m_div3.inputs[0])
+    node_group.links.new(n_group_input_1.outputs["Number of Frames"], n_m_div3.inputs[1])
+    node_group.links.new(n_m_div1.outputs["Value"], n_m_sub.inputs[0])
+    node_group.links.new(n_m_div3.outputs["Value"], n_m_sub.inputs[1])
+
+    #-------------------------------------------------------------
+    #stretch
+    x0, y0 = 1600, -400
+    frame_st = node_group.nodes.new(type="NodeFrame")
+    frame_st.label = "Stretch"
+    frame_st.location = (0,0)
+
+    n_m_mult3 = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_mult3.location = (x0, y0)
+    n_m_mult3.operation = "MULTIPLY"
+    n_m_mult3.parent = frame_st
+
+    node_group.links.new(n_m_sub.outputs["Value"], n_m_mult3.inputs[0])
+    node_group.links.new(n_group_input_1.outputs["Stretch"], n_m_mult3.inputs[1])
+
+    #-------------------------------------------------------------
+    #index
+    x0, y0 = 2000, -400
+    frame_id = node_group.nodes.new(type="NodeFrame")
+    frame_id.label = "Index \in [0,1]"
+    frame_id.location = (0,0)
+
+    n_m_add = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_add.location = (x0, y0)
+    n_m_add.operation = "ADD"
+    n_m_add.parent = frame_id
+
+    n_m_sub = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_sub.location = (x0+200, y0)
+    n_m_sub.operation = "SUBTRACT"
+    n_m_sub.inputs[0].default_value = 1.0
+    n_m_sub.parent = frame_id
+
+    n_comb_xyz = node_group.nodes.new(type="ShaderNodeCombineXYZ")
+    n_comb_xyz.location = (x0+400, y0)
+    n_comb_xyz.inputs["Y"].default_value = 1.0
+    n_comb_xyz.inputs["Z"].default_value = 1.0
+    n_comb_xyz.parent = frame_id
+    
+    node_group.links.new(n_m_mult3.outputs["Value"], n_m_add.inputs[0])
+    node_group.links.new(n_m_mult2.outputs["Value"], n_m_add.inputs[1])
+    node_group.links.new(n_m_add.outputs["Value"], n_m_sub.inputs[1])
+    node_group.links.new(n_m_sub.outputs["Value"], n_comb_xyz.inputs["X"])
+
+    n_img_tex = node_group.nodes.new(type="GeometryNodeImageTexture")
+    n_img_tex.location = (x0+600, y0)
+
+    node_group.links.new(n_group_input_1.outputs["Spiketrain"], n_img_tex.inputs["Image"])
+    node_group.links.new(n_comb_xyz.outputs["Vector"], n_img_tex.inputs["Vector"])
+    node_group.links.new(n_img_tex.outputs["Color"], n_group_output_1.inputs["Spiketrain"])
+
+    return
 
 #%%registration
 def register():
@@ -1230,12 +1555,14 @@ def register():
     neurite_bends()
     neurite_twist()
     position_global()
+    remesh()
     scale_radial()
+    spiketrain() 
 
     #dependent
     neurite_branches()
     # network_container()
-    neuron_axon()
+    neuron_neurites()
     
 
 def unregister():
