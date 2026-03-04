@@ -37,7 +37,7 @@ def spiking_neuron():
     #make nodes
     x0, y0 = 0, 0
     n_out = nodes.new(type="ShaderNodeOutputMaterial")
-    n_out.location = (0,0)
+    n_out.location = (3000,0)
 
     #main nodes
     n_frame_nb = nodes.new(type="NodeFrame")
@@ -144,15 +144,83 @@ def spiking_neuron():
     n_transparent.location = (x0+800, y0-600)
     n_transparent.inputs["Color"].default_value = (0.45,0.45,0.45,1.00)
 
-    n_mix_shader = nodes.new(type="ShaderNodeMixShader")
-    n_mix_shader.location = (x0+1000, y0-400)
+    n_mix_shader1 = nodes.new(type="ShaderNodeMixShader")
+    n_mix_shader1.location = (x0+1000, y0-400)
 
     links.new(n_tc.outputs["Object"], n_map1.inputs["Vector"])
     links.new(n_map1.outputs["Vector"], n_noise_tex1.inputs["Vector"])
     links.new(n_noise_tex1.outputs["Factor"], n_cramp1.inputs["Factor"])
-    links.new(n_cramp1.outputs["Color"], n_mix_shader.inputs["Factor"])
-    links.new(n_pr_bsdf.outputs["BSDF"], n_mix_shader.inputs[1])
-    links.new(n_transparent.outputs["BSDF"], n_mix_shader.inputs[2])
+    links.new(n_cramp1.outputs["Color"], n_mix_shader1.inputs["Factor"])
+    links.new(n_pr_bsdf.outputs["BSDF"], n_mix_shader1.inputs[1])
+    links.new(n_transparent.outputs["BSDF"], n_mix_shader1.inputs[2])
+
+    #spiketrain
+    x0, y0 = (x0+1200,0)
+
+    n_attr = nodes.new(type="ShaderNodeAttribute")
+    n_attr.location = (x0,y0+200)
+    n_attr.attribute_name = "Spiketrain.Texture"
+
+    n_emission = nodes.new(type="ShaderNodeEmission")
+    n_emission.location = (x0,y0-200)
+    n_emission.inputs["Color"].default_value = (1.0,0.2,0.2,1.0)
+    n_emission.inputs["Strength"].default_value = 7.0
+
+    n_mix_shader2 = nodes.new(type="ShaderNodeMixShader")
+    n_mix_shader2.location = (x0+200, y0)
+
+    links.new(n_attr.outputs["Color"], n_mix_shader2.inputs["Factor"])
+    links.new(n_mix_shader1.outputs["Shader"], n_mix_shader2.inputs[1])
+    links.new(n_emission.outputs["Emission"], n_mix_shader2.inputs[2])
+
+    #displacement
+    x0, y0 = 1800, -400
+    n_frame_disp = nodes.new(type="NodeFrame")
+    n_frame_disp.location = (0,0)
+    n_frame_disp.label = "Displacement"
+
+    n_tc = nodes.new(type="ShaderNodeTexCoord")
+    n_tc.location = (x0, y0)
+    n_tc.parent = n_frame_disp
+
+    n_map1 = nodes.new(type="ShaderNodeMapping")
+    n_map1.location = (x0+200, y0)
+    n_map1.parent = n_frame_disp
+
+    n_noise_tex1 = nodes.new(type="ShaderNodeTexNoise")
+    n_noise_tex1.location = (x0+400, y0)
+    n_noise_tex1.noise_dimensions = '4D'
+    n_noise_tex1.inputs["Scale"].default_value = 5.5
+    n_noise_tex1.inputs["Detail"].default_value = 3.3
+    n_noise_tex1.inputs["Roughness"].default_value = 0.6
+    n_noise_tex1.inputs["Lacunarity"].default_value = 0.3
+    n_noise_tex1.inputs["Distortion"].default_value = 0.3
+    n_noise_tex1.parent = n_frame_disp
+
+    n_cramp1 = nodes.new(type="ShaderNodeValToRGB")
+    n_cramp1.location = (x0+600,y0)
+    n_cramp1.color_ramp.elements[0].position = 0.40
+    n_cramp1.color_ramp.elements[1].position = 0.85
+    n_cramp1.color_ramp.elements[0].color = (0,0,0,1)
+    n_cramp1.color_ramp.elements[1].color = (0.4,0.4,0.4,1.0)
+    n_cramp1.parent = n_frame_disp
+
+    n_disp = nodes.new(type="ShaderNodeDisplacement")
+    n_disp.location = (x0+900,y0)
+    n_disp.inputs["Scale"].default_value = 0.1
+    n_disp.parent = n_frame_disp
+
+    links.new(n_tc.outputs["Object"], n_map1.inputs["Vector"])
+    links.new(n_tc.outputs["Normal"], n_disp.inputs["Normal"])
+    links.new(n_map1.outputs["Vector"], n_noise_tex1.inputs["Vector"])
+    links.new(n_noise_tex1.outputs["Factor"], n_cramp1.inputs["Factor"])
+    links.new(n_cramp1.outputs["Color"], n_disp.inputs["Height"])
+    links.new(n_disp.outputs["Displacement"], n_out.inputs["Displacement"])
+
+    #final links
+    links.new(n_mix_shader2.outputs["Shader"], n_out.inputs["Surface"])
+
+
 
     return
 
