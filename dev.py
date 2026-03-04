@@ -74,7 +74,7 @@ def make_spike_texture(
     for t in spike_times:
         print(t, w)
         if t < w:
-            püixels[:,t,:] = 1.0
+            pixels[:,t,:] = 1.0
         else:
             logger.warning(f"spiketime {t} >= image width ({w})... ignoring")
 
@@ -86,10 +86,10 @@ def make_spike_texture(
 
 #NOTE: execute twice to make changes in submodules visible!!!
 if __name__ == "__main__":
-    # spiketimes_main1 = np.array([00, 30, 60, 90, 120])
+    spiketimes_main1 = np.array([00, 30, 60, 90, 120])
     # spiketimes_main2 = np.array([15, 45, 60, 90, 120])
     # spiketimes_main3 = np.array([75, 105])
-    # make_spike_texture(spiketimes_main1, img_name="SpikeTrain.Main.001", override=True)
+    make_spike_texture(spiketimes_main1, img_name="SpikeTrain.Main.001", override=True)
     # make_spike_texture(spiketimes_main2, img_name="SpikeTrain.Main.002", override=True)
     # make_spike_texture(spiketimes_main3, img_name="SpikeTrain.Main.003", override=True)
     

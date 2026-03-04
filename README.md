@@ -2,4 +2,5 @@
 
 
 ## TODO:
-* build [shader node tree](./src/snnib/shader_nodes.py)
+- [ ] refactor spikettrain material generation (module "spiketrains.py") 
+- [x] build [shader node tree](./src/snnib/shader_nodes.py)
