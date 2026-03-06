@@ -73,7 +73,10 @@ def register():
 
 
 def unregister():
-    bpy.utils.unregister_class(SnnibProperties)
+    try:
+        bpy.utils.unregister_class(SnnibProperties)
+    except:
+        pass
     del bpy.types.Scene.snnib_props
 
     #custom objects

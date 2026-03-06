@@ -89,7 +89,7 @@ if __name__ == "__main__":
     spiketimes_main1 = np.array([00, 30, 60, 90, 120])
     # spiketimes_main2 = np.array([15, 45, 60, 90, 120])
     # spiketimes_main3 = np.array([75, 105])
-    make_spike_texture(spiketimes_main1, img_name="SpikeTrain.Main.001", override=True)
+    # make_spike_texture(spiketimes_main1, img_name="SpikeTrain.Main.001", override=True)
     # make_spike_texture(spiketimes_main2, img_name="SpikeTrain.Main.002", override=True)
     # make_spike_texture(spiketimes_main3, img_name="SpikeTrain.Main.003", override=True)
     

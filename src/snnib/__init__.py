@@ -57,20 +57,20 @@ import importlib
 
 #submodules
 from . import (
-    # network,
-    geo_nodes,
-    shader_nodes,
-    # opreators,
-    # panels,
-    # properties,
+    network,
+    # geo_nodes,
+    # shader_nodes,
+    opreators,
+    panels,
+    properties,
 )
 modules = (
-    # network,
-    geo_nodes,
-    shader_nodes,   #NOTE: might have to be loaded BEFORE `geo_nodes`
-    # opreators,
-    # panels,
-    # properties,
+    network,
+    # geo_nodes,
+    # shader_nodes,   #NOTE: might have to be loaded BEFORE `geo_nodes`
+    opreators,
+    panels,
+    properties,
 )
 
 # ignore_modules = (geo_nodes,)

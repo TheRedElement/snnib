@@ -4,15 +4,17 @@
 
 #%%imports
 import bpy
+import bmesh
 
 import logging
 import numpy as np
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, force=True)
 
 from . import utils
 from . import network
+from . import DEV
 
 #%%definitions
 class SNNIB_OT_build_snn(bpy.types.Operator):
@@ -58,20 +60,50 @@ class SNNIB_OT_make_template_neuron(bpy.types.Operator):
             bpy.data.meshes.remove(mesh)
         """
         
-        #create sphere
-        bpy.ops.mesh.primitive_uv_sphere_add(
-            radius=1,
-            location=(0, 0, 0),
-            segments=18,
-            ring_count=9,
-        )
-        neuron_obj = bpy.context.active_object
-        neuron_obj.name = "SNNIB.Neuron.Template"
-        neuron_obj.data.name = "SNNIB.Neuron.Template"
+        name = "SNNIB.Neuron.Template"
+        if DEV:
+            if name in bpy.data.objects.keys():
+                logger.debug("using existing object")
+                neuron_obj = bpy.data.objects[name]
+            else:
+                logger.debug("generating new object")
+                #create sphere
+                bpy.ops.mesh.primitive_cube_add(
+                    size=1,
+                    location=(0, 0, 0),
+                )
+                neuron_obj = bpy.context.active_object
+                neuron_obj.name = name
+                neuron_obj.data.name = name
+
+                #convert to sphere
+                radius = .5
+                bm = bmesh.new()
+                bm.from_mesh(neuron_obj.data)
+                bmesh.ops.subdivide_edges(  #subdivide
+                    bm,
+                    edges=bm.edges,
+                    cuts=5,
+                    use_grid_fill=True,
+                )
+                for v in bm.verts:          #convert to sphere (all vertices at constant radius from object origin)
+                    v.co = v.co.normalized() * radius
+                
+                bm.to_mesh(neuron_obj.data)
+                bm.free()
+        else:
+                #create sphere (name will be adjusted automatically)
+                bpy.ops.mesh.primitive_cube_add(
+                    size=1,
+                    location=(0, 0, 0),
+                )
+                neuron_obj = bpy.context.active_object
+                neuron_obj.name = name
+                neuron_obj.data.name = name
         
         #add geonodes
         gn = neuron_obj.modifiers.new(name="Neuron.Axon", type='NODES')
-        gn.node_group = bpy.data.node_groups["SnnibNeuronAxon"]
+        gn.node_group = bpy.data.node_groups["SnnibNeuronNeurites"]
         
         #other settings
         neuron_obj.hide_render = True
@@ -91,4 +123,7 @@ def register():
 
 def unregister():
     for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+        try:
+            bpy.utils.unregister_class(cls)
+        except:
+            pass

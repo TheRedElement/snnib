@@ -214,7 +214,7 @@ def neurite_branches():
         socket_type='NodeSocketFloat',
     )
     density_in.min_value = 0.0
-    density_in.default_value = 0.3
+    density_in.default_value = 1.0
     
     length_min_in = node_group.interface.new_socket(
         name="Length.Min",
@@ -641,7 +641,7 @@ def neuron_neurites():
     n_axon_diameter_scale = node_group.nodes.new(type="ShaderNodeValue")
     n_axon_diameter_scale.label = "Axon.Diameter.Scale"
     n_axon_diameter_scale.location = (x0+0, y0-900)
-    n_axon_diameter_scale.outputs[0].default_value = 0.3
+    n_axon_diameter_scale.outputs[0].default_value = 0.2
     n_axon_diameter_scale.parent = frame_ca
 
     n_axon_resolution = node_group.nodes.new(type="ShaderNodeValue")
@@ -691,6 +691,7 @@ def neuron_neurites():
     node_group.links.new(n_group_input_1.outputs["Neuron Object"], n_snnib_scale_rad.inputs["Geometry"])
     node_group.links.new(n_scene_time.outputs["Frame"], n_m_div.inputs[0])
     node_group.links.new(n_neuron_pulsation_slowdown.outputs["Value"], n_m_div.inputs[1])
+    node_group.links.new(n_neuron_pulsation_scale.outputs["Value"],    n_m_mult.inputs[1])
     node_group.links.new(n_m_div.outputs["Value"], n_noise_tex.inputs["W"])
     node_group.links.new(n_snnib_pos_glob.outputs["Global Position"], n_noise_tex.inputs["Vector"])
     node_group.links.new(n_noise_tex.outputs["Factor"], n_m_mult.inputs[0])
@@ -723,7 +724,7 @@ def neuron_neurites():
     n_repeat_out.repeat_items.new("FLOAT", "Diameter")
     n_repeat_out.parent = frame_d
     n_repeat_in.pair_with_output(n_repeat_out)  #create pair
-    n_repeat_in.inputs["Density"].default_value = 2.0
+    n_repeat_in.inputs["Density"].default_value = 3.0
     n_repeat_in.inputs["Length.Min"].default_value = 0.1
     n_repeat_in.inputs["Length.Max"].default_value = 3.0
     n_repeat_in.inputs["Diameter"].default_value = 0.03
