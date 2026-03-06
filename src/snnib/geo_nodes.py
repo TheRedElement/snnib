@@ -959,14 +959,14 @@ def remesh():
         in_out='INPUT',
         socket_type='NodeSocketFloat'
     )
-    voxel_size_in.default_value = 0.03
+    voxel_size_in.default_value = 0.02
     threshold_in = node_group.interface.new_socket(
         name="Threshold",
         description="Threshold to use to convert voxelized geometry to mesh",
         in_out='INPUT',
         socket_type='NodeSocketFloat'
     )
-    threshold_in.default_value = 0.03
+    threshold_in.default_value = 0.02
     geo_out = node_group.interface.new_socket(
         name="Geometry",
         description="geometry after being scaled radially",
@@ -1285,6 +1285,7 @@ def spiketrain():
 #%%registration
 def register():
     #independent
+    network_container()
     neurite_to_mesh()
     neurite_bends()
     neurite_twist()

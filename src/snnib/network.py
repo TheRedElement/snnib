@@ -147,16 +147,14 @@ class Network:
         - uses `template_obj` to instantiate neurons based on `template_obj`
             - creates new `template_obj` if `None`
         """
+
+        name_template = "SNNIB.Neuron.Template"
+
         #default params
         if template_obj is None:
-            bpy.ops.mesh.primitive_uv_sphere_add(location=(0,0,0))
-            template_obj = bpy.context.active_object
-            template_obj.name = "Neuron.Template"
-            template_obj.data.name = "Neuron.Template"
-            
-            #add to scene
-            bpy.context.collection.objects.link(template_obj)
-                    
+            #call custom operator
+            template_obj = generate_template_neuron(name_template)
+
             #parenting
             template_obj.parent = self.network_container          
         else:
@@ -180,7 +178,7 @@ class Network:
             neuron_obj.location = self.coords[n]
             """
             
-            #instanciation
+            #instantiation
             neuron_obj = bpy.data.objects.new(neuron_idx, template_obj.data)
             neuron_obj.location = self.coords[n]
             
@@ -212,10 +210,10 @@ class Network:
             #copy geonodes
             neuron_gn = utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
             neuron_gn = [mod for mod in neuron_obj.modifiers if mod.type == 'NODES'][0]     #first geonodes modifier of the template object
-
-            neuron_gn["Socket_1"] = axon_obj
-            neuron_gn["Socket_2"] = self.network_container
-            neuron_gn["Socket_3"] = template_obj.material_slots[0].material
+            
+            socket_mapping = {item.name:item.identifier for item in neuron_gn.node_group.interface.items_tree}
+            neuron_gn[socket_mapping["Axon Curve"]] = axon_obj
+            neuron_gn[socket_mapping["Spiketrain"]] = bpy.data.images["SpikeTrain.Main.001"]
                         
             #parenting
             axon_obj.parent = neuron_obj
@@ -281,7 +279,41 @@ class Network:
             
         return
 
-#%%definitions
+def generate_template_neuron(name:str) -> bpy.types.Object:
+    """returns generated template neuron object
+    """
+
+    #create cube
+    bpy.ops.mesh.primitive_cube_add(
+        size=1,
+        location=(0, 0, 0),
+    )
+    neuron_obj = bpy.context.active_object
+    neuron_obj.name = name
+    neuron_obj.data.name = name
+
+    #convert to sphere
+    radius = .5
+    bm = bmesh.new()
+    bm.from_mesh(neuron_obj.data)
+    bmesh.ops.subdivide_edges(  #subdivide
+        bm,
+        edges=bm.edges,
+        cuts=5,
+        use_grid_fill=True,
+    )
+    for v in bm.verts:          #convert to sphere (all vertices at constant radius from object origin)
+        v.co = v.co.normalized() * radius
+    
+    bm.to_mesh(neuron_obj.data)
+    bm.free()
+
+    #add geonodes
+    gn = neuron_obj.modifiers.new(name="Neuron.Axon", type='NODES')
+    gn.node_group = bpy.data.node_groups["SnnibNeuronNeurites"]
+
+    return neuron_obj
+
 
 
 #%%registering
