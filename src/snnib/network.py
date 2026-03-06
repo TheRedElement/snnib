@@ -8,6 +8,7 @@ import bmesh
 import importlib
 import logging
 import numpy as np
+from typing import List
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -99,6 +100,20 @@ class Network:
         
         return
     
+    def _get_mean_connection(self,
+        pre_idx:int,
+        ) -> np.ndarray:
+        """returns vector of mean outgoing connection from neuron `pre_idx`
+        """
+
+        #get postsynaptic neurons
+        post_idxs = [int(pn[1]) for pn in filter(lambda s: s[0]==pre_idx, self.synapses)]
+        
+        #compute mean connection direction
+        direction = np.array([(self.coords[pn]-self.coords[pre_idx]) for pn in post_idxs]).mean(axis=0)
+        
+        return direction
+
     def generate_network(self,
         ):
         """generates random network based on user input
@@ -107,7 +122,8 @@ class Network:
         #generate neurons at random locations
         coords = utils.random.random_points_bbox(self.network_container, self.Rng, self.n_neurons)
         #TODO (actual inside): coords = utils.random.random_points_raycast(self.network_container, self.Rng, self.n_neurons)
-        
+        #TODO: generate random spiketrains for each neuron
+
         #generate random synapses
         synapses = self.Rng.random((self.n_neurons,self.n_neurons))         #synapse weight
         synapses *= (self.Rng.random(synapses.shape) < self.p_synapses)     #connection probability
@@ -159,7 +175,8 @@ class Network:
             template_obj.parent = self.network_container          
         else:
             template_obj = template_obj
-                        
+        
+
         #generating instances
         for n in range(self.n_neurons):
             #create new neuron based on `template_obj`
@@ -169,14 +186,6 @@ class Network:
             ########
             #NEURON#
             ########
-            """
-            #generation (non-linked copy)
-            neuron_obj = template_obj.copy()
-            neuron_obj.name = neuron_idx            
-            neuron_obj.data = template_obj.data.copy()
-            neuron_obj.data.name = neuron_idx
-            neuron_obj.location = self.coords[n]
-            """
             
             #instantiation
             neuron_obj = bpy.data.objects.new(neuron_idx, template_obj.data)
@@ -190,10 +199,14 @@ class Network:
             ######
             #AXON#
             ######
-            #generate random direction of axon growth
-            axon_direction = self.Rng.random(3) - 0.5           #random direction
-            # axon_direction = np.array([0,0,1])                  #in y
+            #get axon direction
+            # axon_direction = self.Rng.random(3) - 0.5           #random direction
+            # axon_direction = np.array([0,0,1])                  #in z
+            axon_direction = self._get_mean_connection(n)       #mean outgoing connection
             axon_direction /= np.linalg.norm(axon_direction)    #normalize
+            print(axon_direction)
+
+
             
             #init neurons axon
             neuron_verts = neuron_obj.data.vertices
