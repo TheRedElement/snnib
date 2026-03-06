@@ -181,9 +181,10 @@ class Network:
             #instantiation
             neuron_obj = bpy.data.objects.new(neuron_idx, template_obj.data)
             neuron_obj.location = self.coords[n]
+            neuron_obj.rotation_euler = np.random.uniform(0, 2*np.pi, 3)  #random orientation
             
             #add to network neurons
-            self.neuron_objects.append(neuron_obj)            
+            self.neuron_objects.append(neuron_obj)
 
             ######
             #AXON#
@@ -196,7 +197,8 @@ class Network:
                 axon_data,
                 coords=[
                     (0,0,0),    #because child of neuron
-                    (self.Rng.random(3) - 0.5) * self.axon_length
+                    # (self.Rng.random(3) - 0.5) * self.axon_length       #random direction
+                    np.array((0,0,1)) * self.axon_length,               #always in z (neuron rotation controls actual orientation)
                     #in case of no parenting use neurons location
                     # neuron_obj.location,
                     # neuron_obj.location + 1.5*neuron_verts[self.Rng.integers(0, len(neuron_verts))].co,  #connection point of axon in random direction
@@ -213,7 +215,8 @@ class Network:
             
             socket_mapping = {item.name:item.identifier for item in neuron_gn.node_group.interface.items_tree}
             neuron_gn[socket_mapping["Axon Curve"]] = axon_obj
-            neuron_gn[socket_mapping["Spiketrain"]] = bpy.data.images["SpikeTrain.Main.001"]
+            neuron_gn[socket_mapping["Spiketrain"]] = bpy.data.images["SpikeTrain.Main.001"]    #TODO: adjust
+            neuron_gn[socket_mapping["Seed"]] = np.random.randint(0,10000)  #make sure every set of dendrites in unique
                         
             #parenting
             axon_obj.parent = neuron_obj

@@ -558,6 +558,12 @@ def neuron_neurites():
         description="Curve representing the neurons axon",
         in_out='INPUT',
         socket_type='NodeSocketObject'
+    )    
+    seed_in = node_group.interface.new_socket(
+        name="Seed",
+        description="Random seed to use for dendrite distribution",
+        in_out='INPUT',
+        socket_type='NodeSocketInt'
     )
     
     neuron_out = node_group.interface.new_socket(
@@ -772,6 +778,7 @@ def neuron_neurites():
 
 
     node_group.links.new(n_group_input_1.outputs["Neuron Object"], n_snnib_neur_branches1.inputs["Host Mesh"])
+    node_group.links.new(n_group_input_1.outputs["Seed"], n_snnib_neur_branches1.inputs["Seed"])
     node_group.links.new(n_dendrite_resolution.outputs["Value"], n_snnib_neur_branches1.inputs["Resolution"])
     node_group.links.new(n_repeat_in.outputs["Geometry"], n_join_geo2.inputs["Geometry"])
     node_group.links.new(n_dendrite_diameter_scale.outputs["Value"], n_snnib_neur_branches1.inputs["Diameter"])
