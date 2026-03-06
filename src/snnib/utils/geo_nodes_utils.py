@@ -108,7 +108,8 @@ def set_node_curve(node:bpy.types.ShaderNodeRGBCurve, channel_index:int, pts:Lis
     #remove old first points
     curve.points.remove(curve.points[0])
     #remove old last points
-    curve.points.remove(curve.points[-1])
+    # for p in curve.points: print(p.location)
+    curve.points.remove(curve.points[-2])
     
     #set handle types
     if handle_types is not None:

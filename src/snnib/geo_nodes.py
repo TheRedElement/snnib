@@ -810,6 +810,25 @@ def neuron_neurites():
     n_res_curve.inputs["Mode"].default_value = 'Length'
     n_res_curve.parent = frame_ax
     
+
+    n_spline_param = node_group.nodes.new(type="GeometryNodeSplineParameter")
+    n_spline_param.location = (x0+0, y0-300)
+    n_spline_param.parent = frame_ax
+
+    n_rgb_curve = node_group.nodes.new(type="ShaderNodeRGBCurve")
+    n_rgb_curve.location = (x0+200, y0-300)
+    points = [[0.0,0.0],[0.25,0.0],[0.50,1.00],[0.75,0.0],[1.0,0.0]]
+    handle_types = ['AUTO_CLAMPED','AUTO_CLAMPED','AUTO_CLAMPED','AUTO_CLAMPED']
+    utils.geo_nodes_utils.set_node_curve(n_rgb_curve, 3, points, handle_types)
+    n_rgb_curve.mapping.update()
+    n_rgb_curve.parent = frame_ax
+
+    n_m_mult = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_mult.operation = "MULTIPLY"
+    n_m_mult.inputs[1].default_value = 3.0
+    n_m_mult.location = (x0+500, y0-300)
+    n_m_mult.parent = frame_ax
+
     n_snnib_neur_twist = node_group.nodes.new(type="GeometryNodeGroup")
     n_snnib_neur_twist.node_tree = bpy.data.node_groups["SnnibNeuriteTwist"]
     n_snnib_neur_twist.location = (x0+400, y0-0)
@@ -831,7 +850,7 @@ def neuron_neurites():
     n_comb_xyz.location = (x0+800, y0-200)
     n_comb_xyz.inputs[0].default_value = 1.0
     n_comb_xyz.inputs[1].default_value = 1.0
-    n_comb_xyz.inputs[2].default_value = 1.1
+    n_comb_xyz.inputs[2].default_value = 1.0
     n_comb_xyz.parent = frame_ax
     
     n_trans_geo = node_group.nodes.new(type="GeometryNodeTransform")
@@ -844,6 +863,10 @@ def neuron_neurites():
     node_group.links.new(n_obj_info.outputs["Geometry"], n_res_curve.inputs["Curve"])
     node_group.links.new(n_res_curve.outputs["Curve"], n_snnib_neur_twist.inputs["Curve"])
     node_group.links.new(n_snnib_neur_twist.outputs["Curve"], n_snnib_neur_bends.inputs["Curve"])
+    node_group.links.new(n_spline_param.outputs["Factor"], n_rgb_curve.inputs["Factor"])
+    node_group.links.new(n_rgb_curve.outputs["Color"], n_m_mult.inputs[0])
+    node_group.links.new(n_m_mult.outputs["Value"], n_snnib_neur_bends.inputs["Strength"])
+    
     node_group.links.new(n_snnib_neur_bends.outputs["Curve"], n_snnib_neur_to_mesh.inputs["Curve"])
     node_group.links.new(n_snnib_neur_to_mesh.outputs["Mesh"], n_trans_geo.inputs["Geometry"])
     node_group.links.new(n_comb_xyz.outputs["Vector"], n_trans_geo.inputs["Scale"])

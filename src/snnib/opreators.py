@@ -36,7 +36,7 @@ class SNNIB_OT_build_snn(bpy.types.Operator):
         Net.draw_neurons(
             template_obj=bpy.context.scene.template_neuron
         )
-        # Net.draw_synapses()
+        Net.draw_synapses()
         
         return {'FINISHED'}
 

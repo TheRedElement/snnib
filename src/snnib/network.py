@@ -181,7 +181,8 @@ class Network:
             #instantiation
             neuron_obj = bpy.data.objects.new(neuron_idx, template_obj.data)
             neuron_obj.location = self.coords[n]
-            neuron_obj.rotation_euler = np.random.uniform(0, 2*np.pi, 3)  #random orientation
+            # neuron_obj.rotation_euler = self.Rng.uniform(0, 2*np.pi, 3)  #random orientation
+            # utils.mesh_utils.apply_rotation(neuron_obj)
             
             #add to network neurons
             self.neuron_objects.append(neuron_obj)
@@ -189,6 +190,11 @@ class Network:
             ######
             #AXON#
             ######
+            #generate random direction of axon growth
+            axon_direction = self.Rng.random(3) - 0.5           #random direction
+            # axon_direction = np.array([0,0,1])                  #in y
+            axon_direction /= np.linalg.norm(axon_direction)    #normalize
+            
             #init neurons axon
             neuron_verts = neuron_obj.data.vertices
             axon_data = bpy.data.curves.new(name=axon_idx, type='CURVE')
@@ -197,18 +203,18 @@ class Network:
                 axon_data,
                 coords=[
                     (0,0,0),    #because child of neuron
-                    # (self.Rng.random(3) - 0.5) * self.axon_length       #random direction
-                    np.array((0,0,1)) * self.axon_length,               #always in z (neuron rotation controls actual orientation)
-                    #in case of no parenting use neurons location
-                    # neuron_obj.location,
-                    # neuron_obj.location + 1.5*neuron_verts[self.Rng.integers(0, len(neuron_verts))].co,  #connection point of axon in random direction
+                    axon_direction * 0.6 * self.axon_length,               #always in z (neuron rotation controls actual orientation)
+                    axon_direction * 1.0 * self.axon_length,               #always in z (neuron rotation controls actual orientation)
                 ],
+                scale=0.1,  #small scale to make sure other outgoing connections have the same root
+                handle_type='ALIGNED',
             )
             
             ##create object
             axon_obj = bpy.data.objects.new(axon_idx, axon_data)
             self.axon_objects.append(axon_obj)
-        
+
+
             #copy geonodes
             neuron_gn = utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
             neuron_gn = [mod for mod in neuron_obj.modifiers if mod.type == 'NODES'][0]     #first geonodes modifier of the template object
@@ -216,7 +222,7 @@ class Network:
             socket_mapping = {item.name:item.identifier for item in neuron_gn.node_group.interface.items_tree}
             neuron_gn[socket_mapping["Axon Curve"]] = axon_obj
             neuron_gn[socket_mapping["Spiketrain"]] = bpy.data.images["SpikeTrain.Main.001"]    #TODO: adjust
-            neuron_gn[socket_mapping["Seed"]] = np.random.randint(0,10000)  #make sure every set of dendrites in unique
+            neuron_gn[socket_mapping["Seed"]] = int(self.Rng.integers(0,10000))  #make sure every set of dendrites in unique
                         
             #parenting
             axon_obj.parent = neuron_obj
@@ -241,44 +247,26 @@ class Network:
             pre_neuron = self.neuron_objects[int(synapse[0])]
             pre_axon = self.axon_objects[int(synapse[0])]
             post_neuron = self.neuron_objects[int(synapse[1])]
-            
-            pre_axon_data = pre_axon.data
-            
-            offset = post_neuron.location - pre_neuron.location
-            _ = utils.mesh_utils.add_spline2data(
-                pre_axon_data,
-                coords=np.linspace(
-                    pre_axon_data.splines[0].bezier_points[-1].co,  #last point of axon-root
-                    pre_axon_data.splines[0].bezier_points[-1].co + offset,
-                    self.synapse_resolution,
-                ),
-            )
-            
-            #add some random branching
-            axon_verts = np.array([bp.co for spline in pre_axon_data.splines for bp in spline.bezier_points[1:-1]])
-            for sncidx in range(self.synapse_max_nonconnections):
-                
-                branch_root_idx = self.Rng.integers(0, len(axon_verts)-1)                       #index of vertex to branch off of
-                branch_root = axon_verts[branch_root_idx]                                       #vertex to branch off of                
+            offset = post_neuron.location - pre_neuron.location     #destination relative to `pre_neuron`
 
-                """TODO: direction constraint
-                direction = (axon_verts[branch_root_idx] - branch_root)                         #local direction of connection
-                direction /= np.linalg.norm(direction)                                          #normalize
-                direction += ((self.Rng.random(3)-0.5) * 0.3)                                   #add variation to direction to allow growth away from root
-                direction /= np.linalg.norm(direction)                                          #normalize to avoid scaling issues
-                """
-                direction = 1.0
-                _ = utils.mesh_utils.add_spline2data(
-                    pre_axon_data,
-                    coords=np.linspace(
-                        branch_root,
-                        branch_root + (self.Rng.random(3) - 0.5) * self.synapse_maxlen_nonconnections * direction,
-                        self.synapse_resolution
-                    )
-                )
-                
-                #update axon_verts
-                axon_verts = np.array([bp.co for spline in pre_axon_data.splines for bp in spline.bezier_points[1:-1]])
+            pre_axon_data = pre_axon.data
+            axon_root_points = [bp.co for bp in pre_axon_data.splines[0].bezier_points]
+            
+            _ = utils.mesh_utils.add_spline2data(
+                pre_axon_data,      #add another outgoing connection to the axon (new, detached spline)
+                coords=[
+                    *axon_root_points,      #start the same as the axon root
+                    offset,                 #target point
+                ],
+                scale=[
+                    *[0.1]*len(axon_root_points),
+                    0.5,
+                ],
+                handle_type=[
+                    *['ALIGNED']*len(axon_root_points),
+                    'ALIGNED',
+                ],
+            )
             
         return
 
