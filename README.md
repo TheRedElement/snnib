@@ -2,5 +2,7 @@
 
 
 ## TODO:
-- [ ] refactor spikettrain material generation (module "spiketrains.py") 
+- [ ] refactor spiketrain material generation (module "spiketrains.py") 
+- [ ] implement random spiketrain generation for random network
+- [x] reimplement network generation with new geonodes setup
 - [x] build [shader node tree](./src/snnib/shader_nodes.py)
