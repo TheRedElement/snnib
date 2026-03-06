@@ -26,10 +26,10 @@ class SNNIB_OT_build_snn(bpy.types.Operator):
     def execute(self, context):
         
         #init network
-        coords = None
+        neurons = None
         synapses = None
         Net = network.Network(
-            coords=coords,
+            neurons=neurons,
             synapses=synapses,
         )
         Net.setup_container()

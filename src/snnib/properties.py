@@ -18,6 +18,13 @@ class SnnibProperties(bpy.types.PropertyGroup):
         default=5,
         min=0,
     )    
+    p_spike: bpy.props.FloatProperty(
+        name="Spike Probability",
+        default=0.1,
+        min=0,
+        max=1.0,
+        step=0.01,
+    )    
     p_synapses: bpy.props.FloatProperty(
         name="Synapse Connection Probability",
         default=0.5,

@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 from . import utils
+from . import spiketrain
 
 
 #%%definitions
@@ -31,7 +32,7 @@ class Network:
     """
     
     def __init__(self,
-        coords:np.ndarray=None,
+        neurons:List[dict]=None,
         synapses:np.ndarray=None,
         ):
         """constructor
@@ -83,14 +84,14 @@ class Network:
         #get RNG
         self.Rng = np.random.default_rng(seed=self.seed)
         
-        if coords is None or synapses is None:
+        if neurons is None or synapses is None:
             #generate random network 
             self.generate_network()
         else:
             #TODO: read from file
-            self.coords = coords
+            self.neurons = neurons
             self.synapses = synapses
-            self.n_neurons = len(coords)
+            self.n_neurons = len(neurons)
             self.n_synapses = len(synapses)
             self.p_synapses = self.n_synapses / self.n_neurons**2
             
@@ -100,17 +101,23 @@ class Network:
         
         return
     
-    def _get_mean_connection(self,
+    def _get_mean_outconnection(self,
         pre_idx:int,
         ) -> np.ndarray:
         """returns vector of mean outgoing connection from neuron `pre_idx`
+
+        - returns random direction if no outgoing connections
         """
 
         #get postsynaptic neurons
         post_idxs = [int(pn[1]) for pn in filter(lambda s: s[0]==pre_idx, self.synapses)]
         
-        #compute mean connection direction
-        direction = np.array([(self.coords[pn]-self.coords[pre_idx]) for pn in post_idxs]).mean(axis=0)
+        if len(post_idxs) == 0:
+            #random direction
+            direction = self.Rng.random(3) - 0.5           #random direction
+        else:
+            #compute mean connection direction
+            direction = np.array([(self.neurons[pn]["coords"]-self.neurons[pre_idx]["coords"]) for pn in post_idxs]).mean(axis=0)
         
         return direction
 
@@ -118,11 +125,15 @@ class Network:
         ):
         """generates random network based on user input
         """
-                
+      
         #generate neurons at random locations
         coords = utils.random.random_points_bbox(self.network_container, self.Rng, self.n_neurons)
         #TODO (actual inside): coords = utils.random.random_points_raycast(self.network_container, self.Rng, self.n_neurons)
         #TODO: generate random spiketrains for each neuron
+        n_frames = bpy.context.scene.frame_end - bpy.context.scene.frame_start
+        spiketrains = [[
+            frame for frame in range(n_frames) if (self.Rng.random() < bpy.context.scene.snnib_props.p_spike)       #check if spike occurred at current frame
+        ] for n in range(len(coords))]
 
         #generate random synapses
         synapses = self.Rng.random((self.n_neurons,self.n_neurons))         #synapse weight
@@ -132,10 +143,10 @@ class Network:
         synapses = np.append(np.transpose(np.where(connected)), synapses[connected].reshape(-1,1), axis=1)
               
         #set attributes
-        self.coords = coords
-        self.synapses = synapses
+        self.neurons = [dict(coords=coords[n], spiketrain=spiketrains[n]) for n in range(self.n_neurons)]
+        self.synapses = synapses        #(pre, post, strength)
         self.n_synapses = len(synapses)
-        
+
         return
     
     def setup_container(self):
@@ -189,7 +200,7 @@ class Network:
             
             #instantiation
             neuron_obj = bpy.data.objects.new(neuron_idx, template_obj.data)
-            neuron_obj.location = self.coords[n]
+            neuron_obj.location = self.neurons[n]["coords"]
             # neuron_obj.rotation_euler = self.Rng.uniform(0, 2*np.pi, 3)  #random orientation
             # utils.mesh_utils.apply_rotation(neuron_obj)
             
@@ -202,10 +213,8 @@ class Network:
             #get axon direction
             # axon_direction = self.Rng.random(3) - 0.5           #random direction
             # axon_direction = np.array([0,0,1])                  #in z
-            axon_direction = self._get_mean_connection(n)       #mean outgoing connection
+            axon_direction = self._get_mean_outconnection(n)       #mean outgoing connection
             axon_direction /= np.linalg.norm(axon_direction)    #normalize
-            print(axon_direction)
-
 
             
             #init neurons axon
@@ -230,11 +239,13 @@ class Network:
 
             #copy geonodes
             neuron_gn = utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
-            neuron_gn = [mod for mod in neuron_obj.modifiers if mod.type == 'NODES'][0]     #first geonodes modifier of the template object
+            neuron_gn = [mod for mod in neuron_obj.modifiers if mod.type == 'NODES'][0]                         #first geonodes modifier of the template object
+            socket_mapping = {item.name:item.identifier for item in neuron_gn.node_group.interface.items_tree}  #map sockets to name for easy access
             
-            socket_mapping = {item.name:item.identifier for item in neuron_gn.node_group.interface.items_tree}
+            ##set geonodes inputs
             neuron_gn[socket_mapping["Axon Curve"]] = axon_obj
-            neuron_gn[socket_mapping["Spiketrain"]] = bpy.data.images["SpikeTrain.Main.001"]    #TODO: adjust
+            # neuron_gn[socket_mapping["Spiketrain"]] = bpy.data.images["SpikeTrain.Main.001"]    #TODO: adjust
+            neuron_gn[socket_mapping["Spiketrain"]] = spiketrain.make_spike_texture(self.neurons[n]["spiketrain"], f"Spiketrain.{neuron_obj.name}", override=True)
             neuron_gn[socket_mapping["Seed"]] = int(self.Rng.integers(0,10000))  #make sure every set of dendrites in unique
                         
             #parenting

@@ -1,48 +1,30 @@
-"""development script
 
-- loads and unloads `snnib`
-- used to test basic functions outside the package
+"""
 """
 
 #%%imports
-
 import bpy
+import bmesh
 
 import importlib
 import logging
 import numpy as np
-import sys
-
-#add paths
-if bpy.path.abspath("//") not in sys.path:
-    sys.path.append(bpy.path.abspath("//"))
-for p in sys.path:
-    print(p)
-
-###############
-#import add-on#
-###############
-from src import snnib
-
+from typing import List
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
-#reload libraries
-importlib.reload(snnib)
-#importlib.reload(snnib.utils.random)
-# snnib.geo_nodes.neuron_axon()
-
-#%%constants
+from . import utils
 
 
 #%%definitions
-"""
 def make_spike_texture(
-    spike_times,
+    spike_times:List[int],
     img_name:str,
     override:bool=True,
-    ):
-    import numpy as np
+    ) -> bpy.types.Image:
+    """generates an image representing the spiketrain encoded in `spiketimes` 
+    """
 
     #global settings
     scene = bpy.context.scene
@@ -73,7 +55,6 @@ def make_spike_texture(
     pixels[:,:,3] = 1.0
 
     for t in spike_times:
-        print(t, w)
         if t < w:
             pixels[:,t,:] = 1.0
         else:
@@ -83,18 +64,4 @@ def make_spike_texture(
 
     img.update()
     
-    return
-"""
-#NOTE: execute twice to make changes in submodules visible!!!
-if __name__ == "__main__":
-    spiketimes_main1 = np.array([00, 30, 60, 90, 120])
-    # spiketimes_main2 = np.array([15, 45, 60, 90, 120])
-    # spiketimes_main3 = np.array([75, 105])
-    # make_spike_texture(spiketimes_main1, img_name="SpikeTrain.Main.001", override=True)
-    # make_spike_texture(spiketimes_main2, img_name="SpikeTrain.Main.002", override=True)
-    # make_spike_texture(spiketimes_main3, img_name="SpikeTrain.Main.003", override=True)
-    
-    try:
-        snnib.unregister()
-    finally:
-        snnib.register()
+    return img

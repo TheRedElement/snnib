@@ -44,6 +44,7 @@ class SNNIB_PT_Panel(bpy.types.Panel):
         box.row().prop(context.scene.snnib_props, "seed")
         row = box.row()
         row.column().prop(context.scene.snnib_props, "n_neurons")
+        row.column().prop(context.scene.snnib_props, "p_spike")
         row.column().prop(context.scene.snnib_props, "p_synapses")
         layout.separator()        
         
