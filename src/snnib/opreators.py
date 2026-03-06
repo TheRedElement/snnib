@@ -10,7 +10,7 @@ import logging
 import numpy as np
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, force=True)
+logging.basicConfig(level=logging.DEBUG, force=True)
 
 from . import utils
 from . import network
@@ -56,10 +56,10 @@ class SNNIB_OT_make_template_neuron(bpy.types.Operator):
                 neuron_obj = bpy.data.objects[name]
             else:
                 logger.debug("generating new object")
-                network.generate_template_neuron(name)
+                neuron_obj = network.generate_template_neuron(name)
         else:
             #create sphere (name will be adjusted automatically)
-            network.generate_template_neuron(name)    
+            neuron_obj = network.generate_template_neuron(name)    
         
         #other settings
         neuron_obj.hide_render = True
