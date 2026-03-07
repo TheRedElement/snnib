@@ -1,4 +1,6 @@
-"""add-on to generate/visualize spiking neural networks
+"""submodules that are only working within blender
+
+add-on to generate/visualize spiking neural networks
 
 Notes
 - https://docs.blender.org/api/current/index.html
@@ -33,37 +35,46 @@ SOFTWARE.
 
 """
 
-bl_info = {
-    "name": "SNNIB",
-    "author": "Lukas Steinwender",
-    "version": (0, 1, 0),
-    "blender": (3, 0, 0),
-    "location": "View3D > Sidebar > My Tab",
-    "description": "Spiking Neural Networks Into Blender",
-    "warning": "",
-    "doc_url": "",
-    "tracker_url": "",
-    "category": "3D View",
-}
-
-#%%constants
-DEV:bool = True    #whether to run in dev mode
-
 
 #%%imports
-import logging 
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.WARNING)
+from .. import DEV, bl_info #global constants (necessary for bpy module)
 
-#only load blender subpackages if executed in blender
-try:
-    #only load blender subpackages if executed in blender
-    import bpy
-    from .blender import register, unregister
-    logger.info("In blender... also loading `snnib.blender`")
-except ImportError:
-    register = lambda: logger.warning("Not in blender... ignoring `snnib.blender`...")
-    unregister = lambda: logger.warning("Not in blender... ignoring `snnib.blender`...")
+#submodules
+from . import (
+    network,
+    # geo_nodes,
+    # shader_nodes,
+    opreators,
+    panels,
+    properties,
+)
+modules = (
+    network,
+    # geo_nodes,
+    # shader_nodes,   #NOTE: might have to be loaded BEFORE `geo_nodes`
+    opreators,
+    panels,
+    properties,
+)
+
+import importlib
+
+# ignore_modules = (geo_nodes,)
+ignore_modules = []
 
 
+#%%registering
+def register():
+    for m in modules:
+        if m not in ignore_modules:
+            m.register()
 
+
+def unregister():
+    for m in modules:
+        if m not in ignore_modules:
+            m.unregister()
+
+if "bpy" in locals():
+    for m in modules:
+        importlib.reload(m)

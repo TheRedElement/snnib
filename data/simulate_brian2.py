@@ -1,4 +1,6 @@
-"""
+"""simple spiking neural network simulation in `brian2`
+
+- used to generate an input file for `snnib`
 """
 
 #%%imports
@@ -9,13 +11,14 @@ from brian2 import mV, pA, pF, ms, second, Hz, Gohm
 import brian2.numpy_ as np
 import logging
 import plotly.graph_objects as go
-import plotly.io as pio
 from plotly.subplots import make_subplots
 from typing import Any, Literal
 
 logging.basicConfig(level=logging.WARN, force=True)
 local_logger = logging.getLogger(__name__)
 local_logger.setLevel(logging.DEBUG)
+
+from snnib import io as snio
 
 #%%from tasksheet
 def poisson_generator(rate, t_lim, unit_ms=False):
@@ -537,52 +540,11 @@ def experiment():
     #simulate
     net.run(t_sim, report="stdout", report_period=10 * second)
     
-    # analyze(t_sim,
-    #     spike_mon_E, spike_mon_I, spike_mon_in
-    # )
-
-    def get_spike_monitor(net:brian2.Network, group:NeuronGroup):
-        for obj in net.objects:
-            if isinstance(obj, SpikeMonitor) and obj.source is group:
-                return obj
-        return None
-
-    def brian22snnib(net:brian2.Network, save):
-        ngs = [obj for obj in net.objects if isinstance(obj, NeuronGroup)]
-        sgs = [obj for obj in net.objects if isinstance(obj, Synapses)]
-
-        #get synapses
-        synapses_snnib = dict(pre=np.array([]), post=np.array([]), w=np.array([]))
-        for sg in sgs:
-            synapses_snnib["pre"] = np.append(synapses_snnib["pre"],sg.i[:])
-            synapses_snnib["post"] = np.append(synapses_snnib["post"],sg.j[:])
-            synapses_snnib["w"] = np.append(synapses_snnib["w"],sg.w[:])
-        #reformat
-        synapses_snnib = list(zip(*synapses_snnib.values()))   #transpose
-
-        #get neurons
-        neurons_snnib = dict(id=np.array([]), x=np.array([]), y=np.array([]), z=np.array([]), spiketrain=[], spiketrain_unit=[])
-        for ng in ngs:
-            neurons_snnib["id"] = np.append(neurons_snnib["id"], ng.i[:])
-            
-            #generate random coordinates
-            neurons_snnib["x"] = np.append(neurons_snnib["x"], (np.random.rand(ng.i.shape[0])-0.5)*2)
-            neurons_snnib["y"] = np.append(neurons_snnib["x"], (np.random.rand(ng.i.shape[0])-0.5)*2)
-            neurons_snnib["z"] = np.append(neurons_snnib["x"], (np.random.rand(ng.i.shape[0])-0.5)*2)
-
-            #get spiketrains
-            spiketrains = list(get_spike_monitor(net, ng).spike_trains().values())
-            spiketrain_unit = spiketrains[0].dimensions
-            spiketrains = [np.asarray(st) for st in spiketrains]    #remove unit
-            neurons_snnib["spiketrain"] += spiketrains
-            neurons_snnib["spiketrain_unit"] +=  [str(spiketrain_unit)] * ng.i.shape[0]
-
-        neurons_snnib = list(zip(*neurons_snnib.values()))   #transpose
-        print(synapses_snnib)
-        print(neurons_snnib)
-        return
+    analyze(t_sim,
+        spike_mon_E, spike_mon_I, spike_mon_in
+    )
     
-    brian22snnib(net, save="temp.h5")
+    snio.brian22snnib(net, save="temp.json") #json to avoid external dependencies of blender
 
     return
 
