@@ -44,7 +44,7 @@ from .. import DEV, bl_info #global constants (necessary for bpy module)
 #submodules
 from . import (
     network,
-    # geo_nodes,
+    geo_nodes,
     # shader_nodes,
     opreators,
     panels,
@@ -52,7 +52,7 @@ from . import (
 )
 modules = (
     network,
-    # geo_nodes,
+    geo_nodes,
     # shader_nodes,   #NOTE: might have to be loaded BEFORE `geo_nodes`
     opreators,
     panels,

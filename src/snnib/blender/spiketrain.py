@@ -19,30 +19,25 @@ from . import utils
 
 #%%definitions
 def make_spike_texture(
-    spike_times:List[int],
+    spike_steps:List[int],
+    steps:int,
     img_name:str,
     override:bool=True,
     ) -> bpy.types.Image:
     """generates an image representing the spiketrain encoded in `spiketimes` 
     """
-
-    #global settings
-    scene = bpy.context.scene
-    frame_start = scene.frame_start
-    frame_end = scene.frame_end
-    n_frames = frame_end - frame_start + 1
     
     #override current image if requested
     if override and img_name in bpy.data.images.keys():
-        img = bpy.data.images[img_name]  #get image
-        # img.user_clear()                #clear users
+        img = bpy.data.images[img_name]     #get image
+        # img.user_clear()                    #clear users
         # if not img.users:
-        #     bpy.data.images.remove(img) #delete
+        #     bpy.data.images.remove(img)     #delete
     else:
         #create new image (with new name)
         img = bpy.data.images.new(
             name=img_name,
-            width=n_frames,
+            width=steps,            #every step is a single pixel
             height=1,
             alpha=True,
         )
@@ -54,7 +49,7 @@ def make_spike_texture(
     pixels = np.zeros((h, w, 4))
     pixels[:,:,3] = 1.0
 
-    for t in spike_times:
+    for t in spike_steps:
         if t < w:
             pixels[:,t,:] = 1.0
         else:

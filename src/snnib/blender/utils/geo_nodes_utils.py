@@ -11,6 +11,18 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 #%%definitions
+def add_todo_node(node_group, location=(0,0)):
+    """adds a frame denoting a TODO to the node tree
+    """
+    n_todo = node_group.nodes.new(type="NodeFrame")
+    n_todo.label = "TODO"
+    n_todo.use_custom_color = True
+    n_todo.label_size = 45
+    n_todo.color = (1.0,0.4,0.0)
+    n_todo.location = location
+
+    return n_todo
+
 def copy_geonodes(
     src:bpy.types.Object, targ:bpy.types.Object,
     ) -> bpy.types.NodesModifier:
@@ -35,29 +47,6 @@ def copy_geonodes(
     targ_gn_mod.node_group = src_gn_mod.node_group
     
     return targ_gn_mod
-
-def delete_geonode_groups(group_name:str):
-    """deletes all geometry node node groups with name `group_name`
-    
-    - used before generating new groups to avoid cluttering blender
-    """
-    
-    #get all matching goroups
-    to_delete = [ng for ng in bpy.data.node_groups if ng.name == group_name and ng.bl_idname == "GeometryNodeTree"]
-
-    #remove found groups
-    for ng in to_delete:
-        bpy.data.node_groups.remove(ng)
-
-    return {'FINISHED'}
-
-def exists_node_group(group_name:str):
-    """returns flag whether node group of `group_name` already exists
-
-    - used to avoid cluttering in blender file when developing new node group
-        - allows creation of new group only if it is not existing already
-    """
-    return any([group_name==ng.name for ng in bpy.data.node_groups])
 
 def clear_node_group(group_name:str):
     """clears the node group of `group_name`
@@ -93,6 +82,37 @@ def create_node_group(group_name:str, dev:bool) -> Union[bpy.types.GeometryNodeT
 
     return node_group
 
+def delete_geonode_groups(group_name:str):
+    """deletes all geometry node node groups with name `group_name`
+    
+    - used before generating new groups to avoid cluttering blender
+    """
+    
+    #get all matching goroups
+    to_delete = [ng for ng in bpy.data.node_groups if ng.name == group_name and ng.bl_idname == "GeometryNodeTree"]
+
+    #remove found groups
+    for ng in to_delete:
+        bpy.data.node_groups.remove(ng)
+
+    return {'FINISHED'}
+
+def exists_node_group(group_name:str):
+    """returns flag whether node group of `group_name` already exists
+
+    - used to avoid cluttering in blender file when developing new node group
+        - allows creation of new group only if it is not existing already
+    """
+    return any([group_name==ng.name for ng in bpy.data.node_groups])
+
+def get_node_by_label(node_tree, label):
+    """returns first node in `node_tree` that matches `label`
+    """
+    for node in node_tree.nodes:
+        if node.label == label:
+            return node
+    return None
+
 def set_node_curve(node:bpy.types.ShaderNodeRGBCurve, channel_index:int, pts:List[List[float]], handle_types:List[str]=None):
     """overrides node curve (i.e. RGB Curves node) with new curve
     """
@@ -120,17 +140,6 @@ def set_node_curve(node:bpy.types.ShaderNodeRGBCurve, channel_index:int, pts:Lis
     node.mapping.update()
     return  {'FINISHED'}
 
-def add_todo_node(node_group, location=(0,0)):
-    """adds a frame denoting a TODO to the node tree
-    """
-    n_todo = node_group.nodes.new(type="NodeFrame")
-    n_todo.label = "TODO"
-    n_todo.use_custom_color = True
-    n_todo.label_size = 45
-    n_todo.color = (1.0,0.4,0.0)
-    n_todo.location = location
-
-    return n_todo
 
 #%%registration
 def register():

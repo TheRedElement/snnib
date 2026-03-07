@@ -587,11 +587,11 @@ def neuron_neurites():
     frame_c.label = "Controls"
     frame_c.location = (0,0)
 
-    n_n_frames = node_group.nodes.new(type="ShaderNodeValue")
-    n_n_frames.label = "Number of Frames"
-    n_n_frames.location = (x0+0, y0)
-    n_n_frames.outputs[0].default_value = 120
-    n_n_frames.parent = frame_c
+    n_n_simsteps = node_group.nodes.new(type="ShaderNodeValue")
+    n_n_simsteps.label = "Number of Simulation Steps"
+    n_n_simsteps.location = (x0+0, y0)
+    n_n_simsteps.outputs[0].default_value = 120
+    n_n_simsteps.parent = frame_c
 
     frame_cn = node_group.nodes.new(type="NodeFrame")
     frame_cn.label = "Neuron"
@@ -909,7 +909,7 @@ def neuron_neurites():
     node_group.links.new(n_group_input_1.outputs["Spiketrain"], n_snnib_spiketrain.inputs["Spiketrain"])
     node_group.links.new(n_spiketrain_offset.outputs["Value"], n_snnib_spiketrain.inputs["Offset"])
     node_group.links.new(n_spiketrain_stretch.outputs["Value"], n_snnib_spiketrain.inputs["Stretch"])
-    node_group.links.new(n_n_frames.outputs["Value"], n_snnib_spiketrain.inputs["Number of Frames"])
+    node_group.links.new(n_n_simsteps.outputs["Value"], n_snnib_spiketrain.inputs["Number of Frames"])
     node_group.links.new(n_snnib_remesh.outputs["Geometry"], n_store_attr.inputs["Geometry"])
     node_group.links.new(n_snnib_spiketrain.outputs["Spiketrain"], n_store_attr.inputs["Value"])
     node_group.links.new(n_store_attr.outputs["Geometry"], n_set_mat.inputs["Geometry"])

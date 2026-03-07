@@ -123,6 +123,11 @@ class Network:
         synapses = np.append(np.transpose(np.where(connected)), synapses[connected].reshape(-1,1), axis=1)
               
         #set attributes
+        self.meta = dict(
+            sim_time=n_frames, sim_time_unit="frame",
+            dt=1, dt_unit="frame",
+            steps=n_frames,
+        )
         self.neurons = [dict(coords=coords[n], spiketrain=spiketrains[n]) for n in range(self.n_neurons)]
         self.synapses = [dict(pre=s[0], post=s[1], w=s[2]) for s in synapses]
         self.n_synapses = len(synapses)
@@ -139,6 +144,7 @@ class Network:
         with open(self.network_file, "r") as f:
             data = json.load(f)
             
+            
             #read and adjust coordinates to bbox
             coords = np.array([[n[0],n[1],n[2]] for n in data["neurons"]])
             coords = utils.scaling.minmaxscale(coords, bb_min, bb_max, axis=0)
@@ -146,6 +152,7 @@ class Network:
                 coords=coords[nidx],
                 spiketrain=set(np.round(n[3],0).astype(int)))
             for nidx, n in enumerate(data["neurons"])]
+            self.meta = data["meta"]
             self.synapses = [dict(pre=s[0], post=s[1], w=s[2]) for s in data["synapses"]]
             self.n_neurons = len(self.neurons)
             self.n_synapses = len(self.synapses)
@@ -234,9 +241,18 @@ class Network:
             ##set geonodes inputs
             neuron_gn[socket_mapping["Axon Curve"]] = axon_obj
             # neuron_gn[socket_mapping["Spiketrain"]] = bpy.data.images["SpikeTrain.Main.001"]    #TODO: adjust
-            neuron_gn[socket_mapping["Spiketrain"]] = spiketrain.make_spike_texture(self.neurons[n]["spiketrain"], f"Spiketrain.{neuron_obj.name}", override=True)
+            neuron_gn[socket_mapping["Spiketrain"]] = spiketrain.make_spike_texture(
+                spike_steps=self.neurons[n]["spiketrain"], steps=self.meta["steps"],
+                img_name=f"Spiketrain.{neuron_obj.name}",
+                override=False,
+            )
+            ##adjust geonodes mapping
             neuron_gn[socket_mapping["Seed"]] = int(self.Rng.integers(0,10000))  #make sure every set of dendrites in unique
-                        
+            gn_steps_node = utils.geo_nodes_utils.get_node_by_label(neuron_gn.node_group, "Number of Simulation Steps")
+            gn_steps_node.outputs["Value"].default_value = self.meta["steps"]
+            gn_st_stretch = utils.geo_nodes_utils.get_node_by_label(neuron_gn.node_group, "SpikeTrain.Stretch")
+            gn_st_stretch.outputs["Value"].default_value = self.meta["t_sim"]/self.meta["steps"]    #equivalent to `self.meta["dt"]`
+            
             #parenting
             axon_obj.parent = neuron_obj
             neuron_obj.parent = self.network_container
@@ -314,7 +330,7 @@ def generate_template_neuron(name:str) -> bpy.types.Object:
 
     #add geonodes
     gn = neuron_obj.modifiers.new(name="Neuron.Axon", type='NODES')
-    gn.node_group = bpy.data.node_groups["SnnibNeuronNeurites"]
+    gn.node_group = bpy.data.node_groups["SnnibNeuronNeurites"].copy()  #make single user copy of node group
 
     return neuron_obj
 

@@ -9,6 +9,7 @@ import brian2
 from brian2 import NeuronGroup, PoissonInput, SpikeGeneratorGroup, SpikeMonitor, StateMonitor, Synapses
 from brian2 import mV, pA, pF, ms, second, Hz, Gohm
 import brian2.numpy_ as np
+import importlib
 import logging
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -19,6 +20,8 @@ local_logger = logging.getLogger(__name__)
 local_logger.setLevel(logging.DEBUG)
 
 from snnib import io as snio
+
+importlib.reload(snio)
 
 #%%from tasksheet
 def poisson_generator(rate, t_lim, unit_ms=False):
@@ -421,17 +424,45 @@ def check_stp():
 
 def experiment():
 
-    # t_sim = 120 * second
-    # dt = .1 * ms
-    t_sim = 120 * second
-    dt = 10 * ms
+    #experiment settings
+    params = [
+        dict(#optimized
+            setting="optimized",
+            t_sim=120 * second, dt=0.1 * ms,
+            N_E=1000, N_I=250, n_in=3,
+            C_inE=200, C_EE=2, C_EI=2, C_IE=2, C_II=2,
+            delay1="50 * ms + 80 * ms * rand()",
+            delay2="8 * ms + 10 * ms * rand()",
+        ),
+        dict(#default
+            t_sim=120 * second, dt=0.1 * ms,
+            N_E=1000, N_I=250, n_in=3,
+            setting="default",
+            C_inE=200, C_EE=2, C_EI=2, C_IE=1, C_II=1,
+            delay1="5 * ms + 20 * ms * rand()",
+            delay2="1 * ms + 3 * ms * rand()",
+        ),
+        dict(#tiny
+            t_sim=50 * second, dt=10 * ms,
+            N_E=5, N_I=2, n_in=3,
+            setting="tiny",
+            C_inE=2, C_EE=2, C_EI=2, C_IE=1, C_II=1,
+            delay1="5 * ms + 20 * ms * rand()",
+            delay2="1 * ms + 3 * ms * rand()",
+        ),
+    ][2]
+    
+    #global parameters
+    t_sim = params["t_sim"]
+    dt = params["dt"]
 
-    N_E = 1000
-    N_I = 250
-    n_in = 3
+    N_E = params["N_E"]
+    N_I = params["N_I"]
+    n_in = params["n_in"]
 
     stim_len = 50
     stim_dt = 250
+
 
     #setup brian2
     brian2.defaultclock.dt = dt
@@ -464,18 +495,6 @@ def experiment():
     poisson_input_I = PoissonInput(ng_I, 'I', 1, 25 * Hz, weight=5 * pA)
 
     #wiring
-    params = [
-        dict(#optimized
-            C_inE=200, C_EE=2, C_EI=2, C_IE=2, C_II=2,
-            delay1="50 * ms + 80 * ms * rand()",
-            delay2="8 * ms + 10 * ms * rand()",
-        ),
-        dict(#default
-            C_inE=200, C_EE=2, C_EI=2, C_IE=1, C_II=1,
-            delay1="5 * ms + 20 * ms * rand()",
-            delay2="1 * ms + 3 * ms * rand()",
-        ),
-    ][1]
     C_inE = params["C_inE"]  #outgoing
     syn_inE = stp_syn(ng_in, ng_E,
         w_mean=660, w_std=0.7, w_min=0, w_max=None,
@@ -544,7 +563,7 @@ def experiment():
         spike_mon_E, spike_mon_I, spike_mon_in
     )
     
-    snio.brian22snnib(net, save="temp.json") #json to avoid external dependencies of blender
+    snio.brian22snnib(net, t_sim=t_sim, dt=dt,  save=f"brian2_{params['setting']}.json") #json to avoid external dependencies of blender
 
     return
 

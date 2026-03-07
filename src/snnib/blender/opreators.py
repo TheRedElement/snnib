@@ -58,8 +58,8 @@ class SNNIB_OT_make_template_neuron(bpy.types.Operator):
     def execute(self, context):
         name = "SNNIB.Neuron.Template"
         
-        if DEV:
-        # if False:
+        # if DEV:
+        if False:
             if name in bpy.data.objects.keys():
                 logger.debug("using existing object")
                 neuron_obj = bpy.data.objects[name]

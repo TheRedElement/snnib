@@ -15,12 +15,19 @@ logging.basicConfig(level=logging.WARNING)
 #%%definitions
 def brian22snnib(
     net:brian2.Network,
+    t_sim:brian2.Quantity, dt:brian2.Quantity,
     save:str=False,
     ):
     """saves `net` to `snnib` compliant json file
     """
     ngs = [obj for obj in net.objects if isinstance(obj, brian2.NeuronGroup)]
     sgs = [obj for obj in net.objects if isinstance(obj, brian2.Synapses)]
+
+    meta = dict(    #simulation metadata
+        t_sim=float(t_sim), t_sim_unit=str(t_sim.dimensions),
+        dt=float(dt), dt_unit=str(dt.dimensions),
+        steps=int(t_sim/dt)                                     #number of steps (assuming constant `dt`)
+    )
 
     #get synapses
     synapses_snnib = dict(pre=[], post=[], w=[], w_unit=[])
@@ -46,15 +53,20 @@ def brian22snnib(
         #get spiketrains
         spiketrains = list(snnib_b2u.get_spike_monitor(net, ng).spike_trains().values())
         spiketrain_unit = spiketrains[0].dimensions
-        spiketrains = [np.asarray(st).tolist() for st in spiketrains]    #remove unit
+        spiketrains = [(st / dt).astype(int).tolist() for st in spiketrains]    #convert spiketrains to simulations steps
         neurons_snnib["spiketrain"]      += spiketrains
         neurons_snnib["spiketrain_unit"] +=  [str(spiketrain_unit)] * ng.i.shape[0]
 
     neurons_snnib = list(zip(*list(neurons_snnib.values())[1:]))    #transpose #remove ID because encoded in index
+    # print(meta)
     # print(synapses_snnib)
     # print(neurons_snnib)
 
     if isinstance(save, str):
         with open(save, "w") as f:
-            json.dump(dict(neurons=neurons_snnib, synapses=synapses_snnib), f)
+            json.dump(dict(
+                meta=meta,
+                neurons=neurons_snnib,
+                synapses=synapses_snnib
+            ), f)
     return
