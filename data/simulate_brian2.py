@@ -418,8 +418,10 @@ def check_stp():
 
 def experiment():
 
+    # t_sim = 120 * second
+    # dt = .1 * ms
     t_sim = 120 * second
-    dt = .1 * ms
+    dt = 10 * ms
 
     N_E = 1000
     N_I = 250
@@ -535,10 +537,52 @@ def experiment():
     #simulate
     net.run(t_sim, report="stdout", report_period=10 * second)
     
-    analyze(t_sim,
-        spike_mon_E, spike_mon_I, spike_mon_in
-    )
+    # analyze(t_sim,
+    #     spike_mon_E, spike_mon_I, spike_mon_in
+    # )
 
+    def get_spike_monitor(net:brian2.Network, group:NeuronGroup):
+        for obj in net.objects:
+            if isinstance(obj, SpikeMonitor) and obj.source is group:
+                return obj
+        return None
+
+    def brian22snnib(net:brian2.Network, save):
+        ngs = [obj for obj in net.objects if isinstance(obj, NeuronGroup)]
+        sgs = [obj for obj in net.objects if isinstance(obj, Synapses)]
+
+        #get synapses
+        synapses_snnib = dict(pre=np.array([]), post=np.array([]), w=np.array([]))
+        for sg in sgs:
+            synapses_snnib["pre"] = np.append(synapses_snnib["pre"],sg.i[:])
+            synapses_snnib["post"] = np.append(synapses_snnib["post"],sg.j[:])
+            synapses_snnib["w"] = np.append(synapses_snnib["w"],sg.w[:])
+        #reformat
+        synapses_snnib = list(zip(*synapses_snnib.values()))   #transpose
+
+        #get neurons
+        neurons_snnib = dict(id=np.array([]), x=np.array([]), y=np.array([]), z=np.array([]), spiketrain=[], spiketrain_unit=[])
+        for ng in ngs:
+            neurons_snnib["id"] = np.append(neurons_snnib["id"], ng.i[:])
+            
+            #generate random coordinates
+            neurons_snnib["x"] = np.append(neurons_snnib["x"], (np.random.rand(ng.i.shape[0])-0.5)*2)
+            neurons_snnib["y"] = np.append(neurons_snnib["x"], (np.random.rand(ng.i.shape[0])-0.5)*2)
+            neurons_snnib["z"] = np.append(neurons_snnib["x"], (np.random.rand(ng.i.shape[0])-0.5)*2)
+
+            #get spiketrains
+            spiketrains = list(get_spike_monitor(net, ng).spike_trains().values())
+            spiketrain_unit = spiketrains[0].dimensions
+            spiketrains = [np.asarray(st) for st in spiketrains]    #remove unit
+            neurons_snnib["spiketrain"] += spiketrains
+            neurons_snnib["spiketrain_unit"] +=  [str(spiketrain_unit)] * ng.i.shape[0]
+
+        neurons_snnib = list(zip(*neurons_snnib.values()))   #transpose
+        print(synapses_snnib)
+        print(neurons_snnib)
+        return
+    
+    brian22snnib(net, save="temp.h5")
 
     return
 

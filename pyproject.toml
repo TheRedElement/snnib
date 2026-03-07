@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-brian2_sim = "snnib.commands.simulate_brian2.py:main"
+brian2_sim = "snnib:main"
 
 [build-system]
 requires = ["uv_build>=0.8.15,<0.9.0"]
