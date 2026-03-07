@@ -9,17 +9,30 @@ class SnnibProperties(bpy.types.PropertyGroup):
 
     axon_length: bpy.props.FloatProperty(
         name="Axon Length",
-        default=3,
+        description="Length of the axon in meters. Serves as branching point for connections to other neurons.",
+        default=2.0,
         min=0,
         step=0.1,
     )
     n_neurons: bpy.props.IntProperty(
         name="Number of Neurons",
+        description="Number of neurons to visualize when generating a random network.",
         default=5,
         min=0,
-    )    
+    )
+    network_container: bpy.props.PointerProperty(
+        name="Network Container",
+        description="Object that will contain the generated network. Objects bounding box defines network boundaries.",
+        type=bpy.types.Object,
+    )
+    network_file: bpy.props.StringProperty(
+        name="Network File",
+        description="File containing the network to visualize. Will override all properties set in `Random Network` if provided.",
+        subtype='FILE_PATH'
+    )
     p_spike: bpy.props.FloatProperty(
         name="Spike Probability",
+        description="Probability of a spike occurring at any frame when generating a random network. Checked for every neuron individually.",
         default=0.1,
         min=0,
         max=1.0,
@@ -27,6 +40,7 @@ class SnnibProperties(bpy.types.PropertyGroup):
     )    
     p_synapses: bpy.props.FloatProperty(
         name="Synapse Connection Probability",
+        description="Probability that a synapse is connecting two neurons when generating a random network.",
         default=0.5,
         min=0.0,
         max=1.0,
@@ -34,30 +48,16 @@ class SnnibProperties(bpy.types.PropertyGroup):
     )
     seed: bpy.props.IntProperty(
         name="Random Seed",
+        description="Random seed.",
         default=0,
         min=0,
     )
-    synapse_max_nonconnections: bpy.props.IntProperty(
-        name="Maximum Number of Synapse Non-Connections",
-        default=3,
-        min=0,
-    )
-    synapse_maxlen_nonconnections: bpy.props.FloatProperty(
-        name="Maximum Length of Synapse Non-Connection",
-        default=3,
-        min=0,
-        step=0.1,
+    template_neuron: bpy.props.PointerProperty(
+        name="Template Neuron",
+        description="Template instance that will be used as neurons in the visulaized network. It is recommended to generate a template neuron using `Make a Template Neuron` as preset geometry nodes allow for easy customization downstream.",
+        type=bpy.types.Object,
     )    
-    synapse_resolution: bpy.props.IntProperty(
-        name="Synapse Resolution",
-        default=4,
-        min=4,
-    ) 
-    voxel_size: bpy.props.FloatProperty(
-        name="Voxel Size",
-        default=0.1,    #m
-        min=0,
-    )
+
 
 #%%registring
 classes = (

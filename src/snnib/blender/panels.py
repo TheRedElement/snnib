@@ -32,8 +32,8 @@ class SNNIB_PT_Panel(bpy.types.Panel):
         #sections
         box = layout.box()
         box.row().label(text="General Settings")
-        box.row().prop(scene, "network_container", text="Network container")
-        box.row().prop(scene, "template_neuron", text="Template neuron")        
+        box.row().prop(context.scene.snnib_props, "network_container")
+        box.row().prop(context.scene.snnib_props, "template_neuron")
         box.separator()
         box.row().label(text="Axons")
         box.row().prop(context.scene.snnib_props, "axon_length")
@@ -50,7 +50,8 @@ class SNNIB_PT_Panel(bpy.types.Panel):
         
         box = layout.box()
         box.row().label(text="Network from file")
-        box.row().label(text="TODO: input")
+        # box.row().label(text="TODO: input")
+        box.row().prop(context.scene.snnib_props, "network_file")
         layout.separator()
         
         layout.row().label(text="Actions")

@@ -5,7 +5,8 @@
 import bpy
 
 import logging
-from typing import List
+import numpy as np
+from typing import List, Tuple
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -67,6 +68,13 @@ def apply_rotation(obj:bpy.types.Object):
     #reset object rotation
     obj.rotation_euler = (0, 0, 0)
     return {'FINISHED'}
+
+def get_bbox(obj:bpy.types.Object) -> Tuple[np.ndarray,np.ndarray]:
+
+    min = np.array([v.co for v in obj.data.vertices]).min(axis=0)
+    max = np.array([v.co for v in obj.data.vertices]).max(axis=0)
+
+    return min, max
 
 #%%registration
 def register():

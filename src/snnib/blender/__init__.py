@@ -37,6 +37,8 @@ SOFTWARE.
 
 
 #%%imports
+import bpy
+
 from .. import DEV, bl_info #global constants (necessary for bpy module)
 
 #submodules

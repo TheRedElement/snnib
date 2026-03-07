@@ -6,6 +6,7 @@ import bpy
 import bmesh
 
 import importlib
+import json
 import logging
 import numpy as np
 from typing import List
@@ -15,6 +16,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 from . import utils
 from . import spiketrain
+
+importlib.reload(utils)
+importlib.reload(spiketrain)
 
 
 #%%definitions
@@ -32,34 +36,16 @@ class Network:
     """
     
     def __init__(self,
-        neurons:List[dict]=None,
-        synapses:np.ndarray=None,
+        network_container:bpy.types.Object,
+        template_neuron:bpy.types.Object,
+        network_file:str=None,
+        # neurons:List[dict]=None,
+        # synapses:np.ndarray=None,
         ):
         """constructor
         
         Parameters
-            - `coords`
-                - `np.ndarray`, optional
-                - coordinates of the neurons contained in the network
-                - 3d
-                    - axis 0 is to number of neurons
-                    - axis 1 is `3`
-                        - `x`
-                        - `y`
-                        - `z`
-                - the default is `None`
-                    - will generate a random network
-            - `synapses`
-                - `np.ndarray`
-                - synapses present in the network
-                - 3d
-                    - axis 0 is to number of synapses
-                    - axis 1 is `3`
-                        - index of presynaptic neuron
-                        - index of postsynaptic neuron
-                        - synaptic weight
-                - the default is `None`
-                    - will generate a random network
+            - 
                 
         Raises
         
@@ -68,32 +54,26 @@ class Network:
         """
         
         #user input
-        if bpy.context.scene.network_container is None:
-            self.network_container = bpy.context.active_object
-        else:
-            self.network_container              = bpy.context.scene.network_container
+        self.network_container = network_container
+        self.template_neuron = template_neuron
+        if network_file in [None,""]: self.network_file = None
+        else: self.network_file = network_file
+        
+        #scene attributes
         self.axon_length                    = bpy.context.scene.snnib_props.axon_length
         self.n_neurons                      = bpy.context.scene.snnib_props.n_neurons
         self.p_synapses                     = bpy.context.scene.snnib_props.p_synapses
-        self.synapse_max_nonconnections     = bpy.context.scene.snnib_props.synapse_max_nonconnections
-        self.synapse_maxlen_nonconnections  = bpy.context.scene.snnib_props.synapse_maxlen_nonconnections
-        self.synapse_resolution             = bpy.context.scene.snnib_props.synapse_resolution
         self.seed                           = bpy.context.scene.snnib_props.seed
-        self.voxel_size                     = bpy.context.scene.snnib_props.voxel_size
         
         #get RNG
         self.Rng = np.random.default_rng(seed=self.seed)
-        
-        if neurons is None or synapses is None:
+        if self.network_file is None:
             #generate random network 
             self.generate_network()
         else:
             #TODO: read from file
-            self.neurons = neurons
-            self.synapses = synapses
-            self.n_neurons = len(neurons)
-            self.n_synapses = len(synapses)
-            self.p_synapses = self.n_synapses / self.n_neurons**2
+            logger.info(f"reading {self.network_file}")
+            self.read_network()
             
         #infered attributes
         self.neuron_objects = []
@@ -110,7 +90,7 @@ class Network:
         """
 
         #get postsynaptic neurons
-        post_idxs = [int(pn[1]) for pn in filter(lambda s: s[0]==pre_idx, self.synapses)]
+        post_idxs = [int(s_out["post"]) for s_out in filter(lambda s: s["pre"]==pre_idx, self.synapses)]
         
         if len(post_idxs) == 0:
             #random direction
@@ -144,9 +124,34 @@ class Network:
               
         #set attributes
         self.neurons = [dict(coords=coords[n], spiketrain=spiketrains[n]) for n in range(self.n_neurons)]
-        self.synapses = synapses        #(pre, post, strength)
+        self.synapses = [dict(pre=s[0], post=s[1], w=s[2]) for s in synapses]
         self.n_synapses = len(synapses)
-
+        print(self.neurons[0])
+        print(self.synapses[0])
+        return
+    
+    def read_network(self):
+        """reads a network from a `self.network_file`
+        """
+        #get context locations
+        bb_min, bb_max = utils.mesh_utils.get_bbox(self.network_container)
+        
+        with open(self.network_file, "r") as f:
+            data = json.load(f)
+            
+            #read and adjust coordinates to bbox
+            coords = np.array([[n[0],n[1],n[2]] for n in data["neurons"]])
+            coords = utils.scaling.minmaxscale(coords, bb_min, bb_max, axis=0)
+            self.neurons = [dict(
+                coords=coords[nidx],
+                spiketrain=set(np.round(n[3],0).astype(int)))
+            for nidx, n in enumerate(data["neurons"])]
+            self.synapses = [dict(pre=s[0], post=s[1], w=s[2]) for s in data["synapses"]]
+            self.n_neurons = len(self.neurons)
+            self.n_synapses = len(self.synapses)
+            self.p_synapses = self.n_synapses / self.n_neurons**2
+            # print(self.neurons[0])
+            # print(self.synapses[0])
         return
     
     def setup_container(self):
@@ -166,31 +171,15 @@ class Network:
     
         return
     
-    def draw_neurons(self,
-        template_obj:bpy.types.Object=None,
-        ):
+    def draw_neurons(self,):
         """draws neurons into the scene
         
-        - uses `template_obj` to instantiate neurons based on `template_obj`
-            - creates new `template_obj` if `None`
+        - uses `self.self.template_neuron` to instantiate neurons based on `self.self.template_neuron`
         """
-
-        name_template = "SNNIB.Neuron.Template"
-
-        #default params
-        if template_obj is None:
-            #call custom operator
-            template_obj = generate_template_neuron(name_template)
-
-            #parenting
-            template_obj.parent = self.network_container          
-        else:
-            template_obj = template_obj
-        
 
         #generating instances
         for n in range(self.n_neurons):
-            #create new neuron based on `template_obj`
+            #create new neuron based on `self.template_neuron`
             neuron_idx = f"Neuron"
             axon_idx = f"Axon"
             
@@ -199,7 +188,7 @@ class Network:
             ########
             
             #instantiation
-            neuron_obj = bpy.data.objects.new(neuron_idx, template_obj.data)
+            neuron_obj = bpy.data.objects.new(neuron_idx, self.template_neuron.data)
             neuron_obj.location = self.neurons[n]["coords"]
             # neuron_obj.rotation_euler = self.Rng.uniform(0, 2*np.pi, 3)  #random orientation
             # utils.mesh_utils.apply_rotation(neuron_obj)
@@ -238,7 +227,7 @@ class Network:
 
 
             #copy geonodes
-            neuron_gn = utils.geo_nodes_utils.copy_geonodes(template_obj, neuron_obj)
+            neuron_gn = utils.geo_nodes_utils.copy_geonodes(self.template_neuron, neuron_obj)
             neuron_gn = [mod for mod in neuron_obj.modifiers if mod.type == 'NODES'][0]                         #first geonodes modifier of the template object
             socket_mapping = {item.name:item.identifier for item in neuron_gn.node_group.interface.items_tree}  #map sockets to name for easy access
             
@@ -268,9 +257,9 @@ class Network:
         for s in range(self.n_synapses):
             #synapse parameters
             synapse = self.synapses[s]
-            pre_neuron = self.neuron_objects[int(synapse[0])]
-            pre_axon = self.axon_objects[int(synapse[0])]
-            post_neuron = self.neuron_objects[int(synapse[1])]
+            pre_neuron = self.neuron_objects[int(synapse["pre"])]
+            pre_axon = self.axon_objects[int(synapse["pre"])]
+            post_neuron = self.neuron_objects[int(synapse["post"])]
             offset = post_neuron.location - pre_neuron.location     #destination relative to `pre_neuron`
 
             pre_axon_data = pre_axon.data

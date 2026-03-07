@@ -25,17 +25,25 @@ class SNNIB_OT_build_snn(bpy.types.Operator):
 
     def execute(self, context):
         
+        #get inputs from ui
+        if bpy.context.scene.snnib_props.network_container is None:
+            network_container = bpy.context.active_object
+        else:
+            network_container = bpy.context.scene.snnib_props.network_container
+        if bpy.context.scene.snnib_props.template_neuron is None:
+            template_neuron = network.generate_template_neuron("SNNIB.Neuron.Template")
+            template_neuron.parent = network_container          
+        else:
+            template_neuron = bpy.context.scene.snnib_props.template_neuron
+        
         #init network
-        neurons = None
-        synapses = None
         Net = network.Network(
-            neurons=neurons,
-            synapses=synapses,
+            network_container=network_container,
+            template_neuron=template_neuron,
+            network_file=bpy.context.scene.snnib_props.network_file,
         )
         Net.setup_container()
-        Net.draw_neurons(
-            template_obj=bpy.context.scene.template_neuron
-        )
+        Net.draw_neurons()
         Net.draw_synapses()
         
         return {'FINISHED'}
@@ -51,6 +59,7 @@ class SNNIB_OT_make_template_neuron(bpy.types.Operator):
         name = "SNNIB.Neuron.Template"
         
         if DEV:
+        # if False:
             if name in bpy.data.objects.keys():
                 logger.debug("using existing object")
                 neuron_obj = bpy.data.objects[name]

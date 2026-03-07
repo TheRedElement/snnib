@@ -51,6 +51,7 @@ DEV:bool = True    #whether to run in dev mode
 
 
 #%%imports
+import importlib
 import logging 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.WARNING)
@@ -59,11 +60,16 @@ logging.basicConfig(level=logging.WARNING)
 try:
     #only load blender subpackages if executed in blender
     import bpy
-    from .blender import register, unregister
-    logger.info("In blender... also loading `snnib.blender`")
-except ImportError:
-    register = lambda: logger.warning("Not in blender... ignoring `snnib.blender`...")
-    unregister = lambda: logger.warning("Not in blender... ignoring `snnib.blender`...")
+    from . import blender 
+    importlib.reload(blender)
+
+    register = blender.register
+    unregister = blender.unregister
+    logger.info("in blender... also loading `snnib.blender`")
+except ImportError as e:
+    logger.warning(f"probably not in blender ({e})")
+    register = lambda: logger.warning("not in blender... ignoring `snnib.blender`...")
+    unregister = lambda: logger.warning("not in blender... ignoring `snnib.blender`...")
 
 
 
