@@ -25,22 +25,28 @@ class SNNIB_OT_build_snn(bpy.types.Operator):
 
     def execute(self, context):
         
-        #get inputs from ui
+        #catching errors
         if bpy.context.scene.snnib_props.network_container is None:
-            network_container = bpy.context.active_object
-        else:
-            network_container = bpy.context.scene.snnib_props.network_container
+            self.report({'ERROR'}, "`Network Container` required")
+            return {'CANCELLED'}
         if bpy.context.scene.snnib_props.template_neuron is None:
-            template_neuron = network.generate_template_neuron("SNNIB.Neuron.Template")
-            template_neuron.parent = network_container          
+            self.report({'ERROR'}, "`Template Neuron` required")
+            return {'CANCELLED'}
+        if bpy.context.scene.snnib_props.network_file in [None,""]:
+            self.report({'INFO'}, "generating random network (no `Network File` provided)")
         else:
-            template_neuron = bpy.context.scene.snnib_props.template_neuron
+            self.report({'INFO'}, "using `Network File` to generate network instead of `Random Network` settings")
+
+        #get inputs from ui
+        network_container = bpy.context.scene.snnib_props.network_container
+        template_neuron = bpy.context.scene.snnib_props.template_neuron
+        network_file = bpy.context.scene.snnib_props.network_file
         
         #init network
         Net = network.Network(
             network_container=network_container,
             template_neuron=template_neuron,
-            network_file=bpy.context.scene.snnib_props.network_file,
+            network_file=network_file,
         )
         Net.setup_container()
         Net.draw_neurons()

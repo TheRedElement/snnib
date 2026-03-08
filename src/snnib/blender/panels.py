@@ -31,30 +31,6 @@ class SNNIB_PT_Panel(bpy.types.Panel):
 
         #sections
         box = layout.box()
-        box.row().label(text="General Settings")
-        box.row().prop(context.scene.snnib_props, "network_container")
-        box.row().prop(context.scene.snnib_props, "template_neuron")
-        box.separator()
-        box.row().label(text="Axons")
-        box.row().prop(context.scene.snnib_props, "axon_length")
-        layout.separator()
-        
-        box = layout.box()
-        box.row().label(text="Random network")
-        box.row().prop(context.scene.snnib_props, "seed")
-        row = box.row()
-        row.column().prop(context.scene.snnib_props, "n_neurons")
-        row.column().prop(context.scene.snnib_props, "p_spike")
-        row.column().prop(context.scene.snnib_props, "p_synapses")
-        layout.separator()        
-        
-        box = layout.box()
-        box.row().label(text="Network from file")
-        box.row().prop(context.scene.snnib_props, "network_file")
-        layout.separator()
-        
-        
-        box = layout.box()
         box.row().label(text="Actions")
         box1 = box.box()
         box1.row().label(text="Initializations (Run Once in Sequence)")
@@ -65,6 +41,32 @@ class SNNIB_PT_Panel(bpy.types.Panel):
         box2.row().column(align=True).operator("operator.snnib_make_template_neuron")
         box2.row().column(align=True).operator("operator.snnib_build_snn")
         
+        box = layout.box()
+        box.row().label(text="Settings")
+        box1 = box.box()
+        box1.row().label(text="General Settings")
+        box1.row().prop(context.scene.snnib_props, "network_container")
+        box1.row().prop(context.scene.snnib_props, "template_neuron")
+        box1.separator()
+        box1.row().label(text="Axons")
+        box1.row().prop(context.scene.snnib_props, "axon_length")
+        layout.separator()
+        
+        box2 = box.box()
+        box2.row().label(text="Random Network")
+        box2.row().prop(context.scene.snnib_props, "seed")
+        row = box2.row()
+        row.column().prop(context.scene.snnib_props, "n_neurons")
+        row.column().prop(context.scene.snnib_props, "p_spike")
+        row.column().prop(context.scene.snnib_props, "p_synapses")
+        layout.separator()        
+        
+        box3 = box.box()
+        box3.row().label(text="Network from File")
+        box3.row().prop(context.scene.snnib_props, "network_file")
+        layout.separator()
+        
+
 
 #%%registration
 classes = (
