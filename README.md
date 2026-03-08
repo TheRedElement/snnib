@@ -21,7 +21,20 @@
     1. provide a `Network Container`
         1. I recommend a cuboid because the add-on uses the objects bounding box to define the neuron positions
     2. adjust the remaining settings or styling in the `Template Neuron`s `Geometry Nodes`
-5. hit `Build SNN` to generate your network
+5. **make sure to `Apply Scale` on the `Network Container` (and potentially also the `Template Neuron`)
+6. hit `Build SNN` to generate your network
 
 ## Mappings
 * one time-step ($dt$) in a SNN animation is mapped to a single frame in blender
+
+## FAQ
+### `Network Container` does not transform to a wireframe when hitting `Build SNN`
+#### Cause 1: Deleted `Geometry Nodes` group
+* most likely you have deleted and re-generated the necessary `Geometry Nodes` group which leads to
+    * `Network Container` still has the `Geometry Nodes` modifier attached but no `node tree` linked anymore
+        * behaves as if no `Geometry Nodes` applied at all
+
+Solution 1:
+> delete the `Geometry Nodes` modifier and hit `Build SNN` again
+Solution 2:
+> copy the nodes from `SnnibNetworkContainer` into the associated `Geometry Nodes` modifier
