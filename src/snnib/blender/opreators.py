@@ -58,8 +58,7 @@ class SNNIB_OT_make_template_neuron(bpy.types.Operator):
     def execute(self, context):
         name = "SNNIB.Neuron.Template"
         
-        # if DEV:
-        if False:
+        if DEV:
             if name in bpy.data.objects.keys():
                 logger.debug("using existing object")
                 neuron_obj = bpy.data.objects[name]
@@ -75,10 +74,39 @@ class SNNIB_OT_make_template_neuron(bpy.types.Operator):
         
         return {'FINISHED'}
 
+class SNNIB_OT_init_geo_nodes(bpy.types.Operator):
+    """initializes all geometry nodes node trees needed for the add-on to work
+    """
+    bl_idname = "operator.snnib_init_geo_nodes"
+    bl_label = "Initialize SNNIB Geometry Nodes"
+
+    def execute(self, context):
+        from . import geo_nodes
+        from . import shader_nodes
+
+        shader_nodes.register() #NOTE: needs to register first because used in `geo_nodes`!
+        geo_nodes.register()
+
+        return {'FINISHED'}
+
+class SNNIB_OT_init_shader_nodes(bpy.types.Operator):
+    """initializes all shader nodes node trees needed for the add-on to work
+    """
+    bl_idname = "operator.snnib_init_shader_nodes"
+    bl_label = "Initialize SNNIB Shader Nodes"
+
+    def execute(self, context):
+        from . import shader_nodes
+
+        shader_nodes.register()
+
+        return {'FINISHED'}
 
 #%%registration
 classes = (
     SNNIB_OT_build_snn,
+    SNNIB_OT_init_geo_nodes,
+    SNNIB_OT_init_shader_nodes,
     SNNIB_OT_make_template_neuron,
 )
 

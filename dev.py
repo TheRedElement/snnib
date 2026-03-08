@@ -29,8 +29,6 @@ logger = logging.getLogger(__name__)
 
 #reload libraries
 importlib.reload(snnib)
-#importlib.reload(snnib.utils.random)
-# snnib.geo_nodes.neuron_axon()
 
 #%%constants
 

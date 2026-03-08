@@ -582,7 +582,7 @@ def neuron_neurites():
 
     #-------------------------------------------------------------
     #control values
-    x0, y0 = 0, -200
+    x0, y0 = -200, -200
     frame_c = node_group.nodes.new(type="NodeFrame")
     frame_c.label = "Controls"
     frame_c.location = (0,0)
@@ -649,12 +649,26 @@ def neuron_neurites():
     n_axon_diameter_scale.location = (x0+0, y0-900)
     n_axon_diameter_scale.outputs[0].default_value = 0.2
     n_axon_diameter_scale.parent = frame_ca
+    
+    n_m_mult_neuron_scale = node_group.nodes.new(type="ShaderNodeMath")
+    n_m_mult_neuron_scale.location = (x0+200, y0-900)
+    n_m_mult_neuron_scale.operation = 'MULTIPLY'
+    n_m_mult_neuron_scale.parent = frame_ca
 
     n_axon_resolution = node_group.nodes.new(type="ShaderNodeValue")
     n_axon_resolution.label = "Axon.Resolution"
     n_axon_resolution.location = (x0+0, y0-1000)
     n_axon_resolution.outputs[0].default_value = 0.1
     n_axon_resolution.parent = frame_ca
+
+    n_neuron_scale = node_group.nodes.new(type="ShaderNodeValue")
+    n_neuron_scale.label = "Neuron.Scale"
+    n_neuron_scale.location = (x0+0, y0-1200)
+    n_neuron_scale.outputs[0].default_value = 1.0
+    n_neuron_scale.parent = frame_c
+
+    node_group.links.new(n_axon_diameter_scale.outputs["Value"], n_m_mult_neuron_scale.inputs[0])
+    node_group.links.new(n_neuron_scale.outputs["Value"], n_m_mult_neuron_scale.inputs[1])
 
     #-------------------------------------------------------------
     #neuron body
@@ -694,6 +708,10 @@ def neuron_neurites():
     n_snnib_scale_rad.location = (x0+800, y0-0)
     n_snnib_scale_rad.parent = frame_nb
 
+    n_trans_geo1 = node_group.nodes.new(type="GeometryNodeTransform")
+    n_trans_geo1.location = (x0+1000, y0-0)
+    n_trans_geo1.parent = frame_nb
+
     node_group.links.new(n_group_input_1.outputs["Neuron Object"], n_snnib_scale_rad.inputs["Geometry"])
     node_group.links.new(n_scene_time.outputs["Frame"], n_m_div.inputs[0])
     node_group.links.new(n_neuron_pulsation_slowdown.outputs["Value"], n_m_div.inputs[1])
@@ -702,6 +720,8 @@ def neuron_neurites():
     node_group.links.new(n_snnib_pos_glob.outputs["Global Position"], n_noise_tex.inputs["Vector"])
     node_group.links.new(n_noise_tex.outputs["Factor"], n_m_mult.inputs[0])
     node_group.links.new(n_m_mult.outputs["Value"], n_snnib_scale_rad.inputs["Scale"])
+    node_group.links.new(n_neuron_scale.outputs["Value"], n_trans_geo1.inputs["Scale"])
+    node_group.links.new(n_snnib_scale_rad.outputs["Geometry"], n_trans_geo1.inputs["Geometry"])
     
     #-------------------------------------------------------------
     #dendrites
@@ -715,8 +735,13 @@ def neuron_neurites():
     n_snnib_neur_branches1.location = (x0, y0)
     n_snnib_neur_branches1.parent = frame_d
 
+    n_trans_geo2 = node_group.nodes.new(type="GeometryNodeTransform")
+    n_trans_geo2.location = (x0+200, y0-0)
+    n_trans_geo2.parent = frame_d
+
     n_join_geo1 = node_group.nodes.new(type="GeometryNodeJoinGeometry")
     n_join_geo1.location = (x0+400, y0)
+    n_join_geo1.parent = frame_d
 
     ##setting up repeat zone
     n_repeat_in = node_group.nodes.new(type="GeometryNodeRepeatInput")
@@ -770,7 +795,9 @@ def neuron_neurites():
     n_m_mult3.parent = frame_ud
     n_m_mult3.hide = True
 
-    node_group.links.new(n_snnib_neur_branches1.outputs["Mesh"], n_join_geo1.inputs["Geometry"])
+    node_group.links.new(n_snnib_neur_branches1.outputs["Mesh"], n_trans_geo2.inputs["Geometry"])
+    node_group.links.new(n_trans_geo2.outputs["Geometry"], n_join_geo1.inputs["Geometry"])
+    node_group.links.new(n_neuron_scale.outputs["Value"], n_trans_geo2.inputs["Scale"])
     node_group.links.new(n_join_geo1.outputs["Geometry"], n_repeat_in.inputs["Geometry"])
     node_group.links.new(n_repeat_in.outputs["Geometry"], n_snnib_neur_branches2.inputs["Host Mesh"])
     node_group.links.new(n_snnib_neur_branches2.outputs["Mesh"], n_join_geo2.inputs["Geometry"])
@@ -853,13 +880,13 @@ def neuron_neurites():
     n_comb_xyz.inputs[2].default_value = 1.0
     n_comb_xyz.parent = frame_ax
     
-    n_trans_geo = node_group.nodes.new(type="GeometryNodeTransform")
-    n_trans_geo.location = (x0+1000, y0-0)
-    n_trans_geo.parent = frame_ax
+    n_trans_geo3 = node_group.nodes.new(type="GeometryNodeTransform")
+    n_trans_geo3.location = (x0+1000, y0-0)
+    n_trans_geo3.parent = frame_ax
 
     node_group.links.new(n_group_input_1.outputs["Axon Curve"], n_obj_info.inputs["Object"])
     node_group.links.new(n_axon_resolution.outputs["Value"], n_res_curve.inputs["Length"])
-    node_group.links.new(n_axon_diameter_scale.outputs["Value"], n_snnib_neur_to_mesh.inputs["Diameter"])
+    node_group.links.new(n_m_mult_neuron_scale.outputs["Value"], n_snnib_neur_to_mesh.inputs["Diameter"])
     node_group.links.new(n_obj_info.outputs["Geometry"], n_res_curve.inputs["Curve"])
     node_group.links.new(n_res_curve.outputs["Curve"], n_snnib_neur_twist.inputs["Curve"])
     node_group.links.new(n_snnib_neur_twist.outputs["Curve"], n_snnib_neur_bends.inputs["Curve"])
@@ -868,9 +895,9 @@ def neuron_neurites():
     node_group.links.new(n_m_mult.outputs["Value"], n_snnib_neur_bends.inputs["Strength"])
     
     node_group.links.new(n_snnib_neur_bends.outputs["Curve"], n_snnib_neur_to_mesh.inputs["Curve"])
-    node_group.links.new(n_snnib_neur_to_mesh.outputs["Mesh"], n_trans_geo.inputs["Geometry"])
-    node_group.links.new(n_comb_xyz.outputs["Vector"], n_trans_geo.inputs["Scale"])
-    node_group.links.new(n_trans_geo.outputs["Geometry"], n_join_geo1.inputs["Geometry"])
+    node_group.links.new(n_snnib_neur_to_mesh.outputs["Mesh"], n_trans_geo3.inputs["Geometry"])
+    node_group.links.new(n_comb_xyz.outputs["Vector"], n_trans_geo3.inputs["Scale"])
+    node_group.links.new(n_trans_geo3.outputs["Geometry"], n_join_geo1.inputs["Geometry"])
 
 
     #-------------------------------------------------------------
@@ -902,7 +929,7 @@ def neuron_neurites():
     n_shade_smooth.location = (x0+1000, y0)
 
 
-    node_group.links.new(n_snnib_scale_rad.outputs["Geometry"], n_join_geo.inputs["Geometry"])
+    node_group.links.new(n_trans_geo1.outputs["Geometry"], n_join_geo.inputs["Geometry"])
     node_group.links.new(n_repeat_out.outputs["Geometry"], n_join_geo.inputs["Geometry"])
     node_group.links.new(n_join_geo.outputs["Geometry"], n_snnib_remesh.inputs["Geometry"])
     node_group.links.new(n_snnib_remesh.outputs["Geometry"], n_snnib_spiketrain.inputs["Geometry"])

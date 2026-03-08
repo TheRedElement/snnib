@@ -37,7 +37,7 @@ bl_info = {
     "name": "SNNIB",
     "author": "Lukas Steinwender",
     "version": (0, 1, 0),
-    "blender": (3, 0, 0),
+    "blender": (5, 0, 1),
     "location": "View3D > Sidebar > My Tab",
     "description": "Spiking Neural Networks Into Blender",
     "warning": "",
@@ -47,7 +47,7 @@ bl_info = {
 }
 
 #%%constants
-DEV:bool = True    #whether to run in dev mode
+DEV:bool = False    #whether to run in dev mode
 
 
 #%%imports

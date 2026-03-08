@@ -124,7 +124,7 @@ class Network:
               
         #set attributes
         self.meta = dict(
-            sim_time=n_frames, sim_time_unit="frame",
+            t_sim=n_frames, t_sim_unit="frame",
             dt=1, dt_unit="frame",
             steps=n_frames,
         )

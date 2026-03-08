@@ -426,26 +426,34 @@ def experiment():
 
     #experiment settings
     params = [
+        dict(#default
+            setting="default",
+            t_sim=120 * second, dt=0.1 * ms,
+            N_E=1000, N_I=250, n_in=3,
+            C_inE=200, C_EE=2, C_EI=2, C_IE=1, C_II=1,
+            delay1="5 * ms + 20 * ms * rand()",
+            delay2="1 * ms + 3 * ms * rand()",
+        ),
         dict(#optimized
-            setting="optimized",
+            setting="huge",
             t_sim=120 * second, dt=0.1 * ms,
             N_E=1000, N_I=250, n_in=3,
             C_inE=200, C_EE=2, C_EI=2, C_IE=2, C_II=2,
             delay1="50 * ms + 80 * ms * rand()",
             delay2="8 * ms + 10 * ms * rand()",
         ),
-        dict(#default
-            t_sim=120 * second, dt=0.1 * ms,
-            N_E=1000, N_I=250, n_in=3,
-            setting="default",
-            C_inE=200, C_EE=2, C_EI=2, C_IE=1, C_II=1,
-            delay1="5 * ms + 20 * ms * rand()",
-            delay2="1 * ms + 3 * ms * rand()",
+        dict(#medium
+            setting="medium",
+            t_sim=120 * second, dt=10 * ms,
+            N_E=1000//2, N_I=250//2, n_in=3,
+            C_inE=200, C_EE=2, C_EI=2, C_IE=2, C_II=2,
+            delay1="50 * ms + 80 * ms * rand()",
+            delay2="8 * ms + 10 * ms * rand()",
         ),
         dict(#tiny
+            setting="tiny",
             t_sim=50 * second, dt=10 * ms,
             N_E=5, N_I=2, n_in=3,
-            setting="tiny",
             C_inE=2, C_EE=2, C_EI=2, C_IE=1, C_II=1,
             delay1="5 * ms + 20 * ms * rand()",
             delay2="1 * ms + 3 * ms * rand()",

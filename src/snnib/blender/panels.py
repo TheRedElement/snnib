@@ -50,13 +50,20 @@ class SNNIB_PT_Panel(bpy.types.Panel):
         
         box = layout.box()
         box.row().label(text="Network from file")
-        # box.row().label(text="TODO: input")
         box.row().prop(context.scene.snnib_props, "network_file")
         layout.separator()
         
-        layout.row().label(text="Actions")
-        layout.row().column(align=True).operator("operator.snnib_build_snn")
-        layout.row().column(align=True).operator("operator.snnib_make_template_neuron")
+        
+        box = layout.box()
+        box.row().label(text="Actions")
+        box1 = box.box()
+        box1.row().label(text="Initializations (Run Once in Sequence)")
+        box1.row().column(align=True).operator("operator.snnib_init_shader_nodes")
+        box1.row().column(align=True).operator("operator.snnib_init_geo_nodes")
+        box2 = box.box()
+        box2.row().label(text="Building")
+        box2.row().column(align=True).operator("operator.snnib_make_template_neuron")
+        box2.row().column(align=True).operator("operator.snnib_build_snn")
         
 
 #%%registration
