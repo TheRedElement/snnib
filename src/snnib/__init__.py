@@ -1,10 +1,19 @@
 """add-on to generate/visualize spiking neural networks
 
-Notes
-- https://docs.blender.org/api/current/index.html
-- conventions:
-    - https://docs.blender.org/api/current/info_best_practice.html
+- contains
+    - [blender](https://www.blender.org/) add-on
+    - python package to convert SNN simulations to format that can be used with the add-on
+- conventions
+    - follow  [blender](https://www.blender.org/)s [best practices](https://docs.blender.org/api/current/info_best_practice.html)
     - classes: `CATEGORY_<type>T_<name>`
+
+Modules
+- `brian2_utils`
+- `io`
+
+Subpackages
+- `blender` -- [blender](https://www.blender.org/) add-on; only available from within [blender](https://www.blender.org/)
+
 
     
 LICENSE:

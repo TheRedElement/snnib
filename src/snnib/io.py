@@ -1,4 +1,15 @@
-"""
+"""module for input-output operations
+
+- utilities to convert models generated with various SNN simulators to `SNNIB` format
+
+Exceptions
+
+Classes
+
+Functions
+    - `brian22snnib()` -- converts `brian2` network to `SNNIB`
+
+Other Objects
 """
 
 #%%imports
@@ -18,7 +29,45 @@ def brian22snnib(
     t_sim:brian2.Quantity, dt:brian2.Quantity,
     save:str=False,
     ):
-    """saves `net` to `snnib` compliant json file
+    """saves `net` to `snnib` compatible json file
+
+    - function to convert `brian2` network to a file that can be imported using `SNNIB`
+        - uses `net` to obtain network elements (synapses, neurons, spiketrains)
+        - generates random 3d coordinates $\vec x \in [-1,1]$ for each neuron
+        - removes units (stores them separately)
+        - extracts some simulation metadata
+
+    Parameters
+        - `net`
+            - `brian2.Network`
+            - the network object to convert to `SNNIB` format
+        - `t_sim`
+            - `brian2.Quantity`
+            - simulation time of the `brian2` simulation
+        - `dt`
+            - `brian2.Quantity`
+            - time-step of the `brian2` simulation
+        - `save`
+            - `str`, optional
+            - file to save the result to
+            - the default is `False`
+                - result not saved
+
+    Raises
+
+    Returns
+        - `snnib_obj`
+            - `dict`
+            - json
+            - generated object that is compatible with SNNIB
+
+    
+    Dependencies
+        - `brian2`
+        - `json`
+        - `logging`
+    
+    
     """
     ngs = [obj for obj in net.objects if isinstance(obj, brian2.NeuronGroup)]
     sgs = [obj for obj in net.objects if isinstance(obj, brian2.Synapses)]
@@ -58,15 +107,18 @@ def brian22snnib(
         neurons_snnib["spiketrain_unit"] +=  [str(spiketrain_unit)] * ng.i.shape[0]
 
     neurons_snnib = list(zip(*list(neurons_snnib.values())[1:]))    #transpose #remove ID because encoded in index
-    # print(meta)
-    # print(synapses_snnib)
-    # print(neurons_snnib)
+    logger.debug(meta)
+    logger.debug(synapses_snnib)
+    logger.debug(neurons_snnib)
+
+    snnib_obj = dict(
+        meta=meta,
+        neurons=neurons_snnib,
+        synapses=synapses_snnib
+    )
 
     if isinstance(save, str):
         with open(save, "w") as f:
-            json.dump(dict(
-                meta=meta,
-                neurons=neurons_snnib,
-                synapses=synapses_snnib
-            ), f)
-    return
+            json.dump(snnib_obj, f)
+    
+    return snnib_obj
