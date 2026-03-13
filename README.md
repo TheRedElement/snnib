@@ -4,6 +4,7 @@
 ## TODO:
 - [ ] testing
 - [ ] tutorials
+- [ ] save function (to store network randomly generated with `snnib`)
 - [x] refactor spiketrain material generation (module "spiketrains.py") 
 - [x] implement random spiketrain generation for random network
 - [x] reimplement network generation with new geonodes setup

@@ -1,4 +1,17 @@
-"""
+"""base class and function to create a `SNNIB` network
+
+- exposed (and called) via blender UI elements
+- controls the look of the generated network
+
+Exceptions
+
+Classes
+    - `Network` -- container of the `SNNIB` network
+
+Functions
+    - `generate_template_neuron()` -- generates a template neuron and adds it to the scene
+
+Other Objects
 """
 
 #%%imports
@@ -26,31 +39,94 @@ class Network:
     """container representing a spiking neural network
     
     Attributes
-        - TODO
+        - `network_container` -- container defining the boundaries of the `SNNIB` network inside [blender](https://www.blender.org/)
+        - `template_neuron` -- object serving as template for all neurons in the network
+        - `network_file` -- `SNNIB` compatible file representing a network output from a simulation
         
     Inferred Attributes
-        - TODO
+        - `axon_length`
+            - `float`
+            - length of the axon root
+            - axon only starts to branch out after that point
+            - obtained from [blender](https://www.blender.org/) UI
+        - `axon_objects`
+            - `List[bpy.types.Object]`
+            - objects of all axons that are part of the network
+        - `n_neurons`
+            - `int`
+            - number of neurons contained in the network
+            - obtained from [blender](https://www.blender.org/) UI
+            - only relevant for randomly generated network
+        - `neuron_objects`
+            - `List[bpy.types.Object]`
+            - objects of all neurons that are part of the network
+        - `p_synapses`
+            - `float`
+            - probability of a synapse forming between any two neurons
+            - obtained from [blender](https://www.blender.org/) UI
+            - only relevant for randomly generated network
+        - `p_spike`
+            - `float`
+            - probability of a neuron spiking at any time
+                - i.e., on for every neuron for every frame `p_spike` a spike is emitted with probability `p_spike`
+            - obtained from [blender](https://www.blender.org/) UI
+            - only relevant for randomly generated network
+        - `Rng`
+            - `np.random.Generator`
+            - random number generator to use for network generation
+        - `seed`
+            - `int`
+            - random seed
+            - obtained from [blender](https://www.blender.org/) UI
+            - only relevant for randomly generated network
         
     Methods
-        - TODO
+        - `_get_mean_outconnection()` -- returns mean direction of outgoing connections of some neuron
+        - `generate_network()` -- generates a random network
+        - `read_network()` -- loads a network from a file
+        - `setup_container()` -- sets up the network container
+        - `draw_neurons()` -- creates neurons and adds them to the scene
+        - `draw_synapses()` -- creates outgoing connections and ads them to the scene
+
+    Dependencies
+        - `bpy`
+        - `bmesh`
+        - `json`
+        - `logging`
+        - `numpy`
+        - `typing`
     """
     
     def __init__(self,
         network_container:bpy.types.Object,
         template_neuron:bpy.types.Object,
         network_file:str=None,
-        # neurons:List[dict]=None,
-        # synapses:np.ndarray=None,
         ):
         """constructor
         
+        - generates a random network if no `network_file` was found
+        - otherwise reads the network from `network_file`
+
         Parameters
-            - 
+            - `network_container`
+                - `bpy.types.Object`
+                - object representing the network container in the scene
+                - bounding box of `network_container` defines the region the network will occupy
+                    - neuron coordinates will be remapped to lie within the bounding box
+            - `template_neuron`
+                - `bpy.types.Object`
+                - object representing a template to use for every neuron contained in the network
+                    - neurons in the network are instanced from `template_neuron`
+                - you only need to modify `template_neuron` in order to procedurally apply the changes to all neurons in the network
+            - `network_file`
+                - `str`, optional
+                - file containing a save network to load into `SNNIB`
+                - the default is `None`
+                    - use random generation instead of reading from a file
                 
         Raises
         
         Returns
-        
         """
         
         #user input
@@ -58,10 +134,11 @@ class Network:
         self.template_neuron = template_neuron
         if network_file in [None,""]: self.network_file = None
         else: self.network_file = network_file
-        
+
         #scene attributes
         self.axon_length                    = bpy.context.scene.snnib_props.axon_length
         self.n_neurons                      = bpy.context.scene.snnib_props.n_neurons
+        self.p_spike                        = bpy.context.scene.snnib_props.p_spike
         self.p_synapses                     = bpy.context.scene.snnib_props.p_synapses
         self.seed                           = bpy.context.scene.snnib_props.seed
         
@@ -69,13 +146,14 @@ class Network:
         self.Rng = np.random.default_rng(seed=self.seed)
         if self.network_file is None:
             #generate random network 
+            logger.info(f"generating random network")
             self.generate_network()
         else:
-            #TODO: read from file
+            #read from file
             logger.info(f"reading {self.network_file}")
             self.read_network()
             
-        #infered attributes
+        #inferred attributes
         self.neuron_objects = []
         self.axon_objects = []
         
@@ -84,9 +162,21 @@ class Network:
     def _get_mean_outconnection(self,
         pre_idx:int,
         ) -> np.ndarray:
-        """returns vector of mean outgoing connection from neuron `pre_idx`
+        """returns vector describing the direction of mean outgoing connection from neuron `pre_idx`
 
         - returns random direction if no outgoing connections
+
+        Parameters
+            - `pre_idx`
+                - `int`
+                - index of the neuron to compute the direction for
+
+        Raises
+
+        Returns
+            -`direction`
+                - `np.ndarray`
+                - mean direction of outgoing connections
         """
 
         #get postsynaptic neurons
@@ -101,18 +191,32 @@ class Network:
         
         return direction
 
-    def generate_network(self,
-        ):
+    def generate_network(self,):
         """generates random network based on user input
+
+        - will
+            - generate random coordinates within `self.network_container`s bounding box
+            - generate random spiketrains for every neuron
+                - for every frame there is a probability `self.p_spike` to emit a spike
+            - generate random connections between neurons
+                - for every pair of neurons a connections exists with probability `self.p_synapses`
+            - generate metadata corresponding to the render settings
+
+        Parameters
+
+        Raises
+
+        Returns
         """
       
         #generate neurons at random locations
         coords = utils.random.random_points_bbox(self.network_container, self.Rng, self.n_neurons)
         #TODO (actual inside): coords = utils.random.random_points_raycast(self.network_container, self.Rng, self.n_neurons)
-        #TODO: generate random spiketrains for each neuron
+
+        #generate random spikes
         n_frames = bpy.context.scene.frame_end - bpy.context.scene.frame_start
         spiketrains = [[
-            frame for frame in range(n_frames) if (self.Rng.random() < bpy.context.scene.snnib_props.p_spike)       #check if spike occurred at current frame
+            frame for frame in range(n_frames) if (self.Rng.random() < self.p_spike)       #check if spike occurred at current frame
         ] for n in range(len(coords))]
 
         #generate random synapses
@@ -131,19 +235,28 @@ class Network:
         self.neurons = [dict(coords=coords[n], spiketrain=spiketrains[n]) for n in range(self.n_neurons)]
         self.synapses = [dict(pre=s[0], post=s[1], w=s[2]) for s in synapses]
         self.n_synapses = len(synapses)
-        print(self.neurons[0])
-        print(self.synapses[0])
+        logger.debug(self.neurons[0])
+        logger.debug(self.synapses[0])
         return
     
     def read_network(self):
-        """reads a network from a `self.network_file`
+        """reads a network from `self.network_file`
+
+        - will
+            - read the network elements and parameters
+            - map the contained neuron coordinates to `self.network_container`s bounding box
+
+        Parameters
+
+        Raises
+
+        Returns        
         """
         #get context locations
         bb_min, bb_max = utils.mesh_utils.get_bbox(self.network_container)
         
         with open(self.network_file, "r") as f:
             data = json.load(f)
-            
             
             #read and adjust coordinates to bbox
             coords = np.array([[n[0],n[1],n[2]] for n in data["neurons"]])
@@ -157,21 +270,37 @@ class Network:
             self.n_neurons = len(self.neurons)
             self.n_synapses = len(self.synapses)
             self.p_synapses = self.n_synapses / self.n_neurons**2
-            # print(self.neurons[0])
-            # print(self.synapses[0])
+            logger.debug(self.neurons[0])
+            logger.debug(self.synapses[0])
         return
     
     def setup_container(self):
+        """sets up the network container
+
+        - will
+            - clear all children of `self.container`
+            - add the respective geo nodes node tree
         
+        Parameters
+
+        Raises
+
+        Returns
+        """
+
         #initial cleanup
         logger.warning(f"clearing children of network container")
         for child in self.network_container.children_recursive:
             bpy.data.objects.remove(child, do_unlink=True)          
 
-        #add geonodes (if none existent)
-        if len([mod for mod in self.network_container.modifiers if mod.type=='NODES']) == 0:
-            gn = self.network_container.modifiers.new(name="Network.Container", type='NODES')
-            gn.node_group = bpy.data.node_groups["SnnibNetworkContainer"]
+        #add geonodes
+        gn = self.network_container.modifiers.new(name="Network.Container", type='NODES')
+        gn.node_group = bpy.data.node_groups["SnnibNetworkContainer"]
+        
+        # #add geonodes (if none existent)
+        # if len([mod for mod in self.network_container.modifiers if mod.type=='NODES']) == 0:
+        #     gn = self.network_container.modifiers.new(name="Network.Container", type='NODES')
+        #     gn.node_group = bpy.data.node_groups["SnnibNetworkContainer"]
         
         #other settings
         self.network_container.hide_render = True
@@ -181,7 +310,17 @@ class Network:
     def draw_neurons(self,):
         """draws neurons into the scene
         
-        - uses `self.self.template_neuron` to instantiate neurons based on `self.self.template_neuron`
+        - will
+            - instantiate neurons based on `self.template_neuron`
+            - initialize axons (axon roots)
+            - apply geo nodes inputs
+            - adjust geo nodes mappings (to roughly match actual simulation)
+        
+        Parameters
+
+        Raises
+
+        Returns        
         """
 
         #generating instances
@@ -264,9 +403,17 @@ class Network:
             
         return
     
-    def draw_synapses(self,
-        ):
+    def draw_synapses(self,):
         """draws synapses into the scene
+        
+        - will
+            - add spline to respective axon object for every existing synapse
+
+        Parameters
+
+        Raises
+
+        Returns           
         """
 
         #create synapses (additional splines appended to axon that connect to postsynaptic neuron)
@@ -299,8 +446,29 @@ class Network:
             
         return
 
-def generate_template_neuron(name:str) -> bpy.types.Object:
+def generate_template_neuron(
+    name:str,
+    ) -> bpy.types.Object:
     """returns generated template neuron object
+    
+    - will
+        - generate a template neuron
+            - create a cube
+            - convert to a sphere
+            - add respective geometry nodes (as a single user copy)
+        - add the object (with name `name`) to the scene
+
+    Parameters
+        - `name`
+            - `str`
+            - name to use for the template neuron
+
+    Raises
+
+    Returns
+        - `neuron_obj`
+            - `bpy.types.Object`
+            - generated neuron object
     """
 
     #create cube
