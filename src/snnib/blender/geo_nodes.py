@@ -1,6 +1,27 @@
-"""custom geo node node groups
+"""custom geometry nodes node groups
 
-- naming pattern: Snnib<Name>
+- defines geometry nodes (geo nodes) node trees
+- makes them available in the [blender](https://www.blender.org/)s geo nodes
+- naming pattern: `Snnib<Name>`
+
+Exceptions
+
+Classes
+
+Functions
+    - `network_container()` -- geo nodes node tree for a network container
+    - `neurite_bends()` -- adds random bends to neurites
+    - `neurite_branches()` -- adds random branches to geometry
+    - `neurite_to_mesh()` -- converts neurite curves to mesh
+    - `neurite_twist()` -- adds twist to neurites
+    - `neuron_neurites()` -- combined group for a single neuron including its outgoing neurites
+    - `position_global()` -- returns position in global (world) coordinates
+    - `remesh()` -- similar to remesh modifier
+    - `scale_radial()` -- applies scaling in radial direction
+    - `spiketrain()` -- generates color-sequence for spiketrain encoding from given `SNNIB` spiketrain texture
+    
+Other Objects
+
 """
 
 #%%imports
@@ -24,6 +45,16 @@ def network_container():
     """creates a geometry nodes node group to style the network container
     
     - converts to wireframe
+
+    Parameters
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`
     """
 
     #group attributes    
@@ -65,7 +96,19 @@ def network_container():
     return
 
 def neurite_bends():
-    """applies twist to some curve
+    """applies random bends to some curve
+
+    - controlled via noise texture
+
+    Parameters
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`
     """
     
     #group attributes    
@@ -190,7 +233,17 @@ def neurite_bends():
 def neurite_branches():
     """creates a set of branches in random directions originating at `Host Mesh`
 
-    - used to procedurally generate non-connections
+    - used to procedurally generate outgoing non-connections
+    
+    Parameters
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`    
     """
     
     #group attributes    
@@ -372,6 +425,18 @@ def neurite_branches():
 
 def neurite_to_mesh():
     """converts some input neurite (curve) to a mesh
+
+    - applies thickness to neurite
+
+    Parameters
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`    
     """
     
     #group attributes    
@@ -464,6 +529,16 @@ def neurite_to_mesh():
 
 def neurite_twist():
     """applies twist to some curve
+    
+    Parameters
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`    
     """
     
     #group attributes    
@@ -531,7 +606,18 @@ def neurite_twist():
 def neuron_neurites():
     """creates template geonodes node group for defining neurons, dendrites, and axons
     
-    - this group is used to make created networks customizable in an intuitive manner 
+    - this group is used to make created networks customizable in an intuitive, procedual manner 
+    - contains all basic tweakable parameters to customize the look of neurons in the `SNNIB` network
+
+    Parameters
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`    
     """
     
     #group attributes    
@@ -948,10 +1034,20 @@ def neuron_neurites():
     return
 
 def position_global():
-    """creates a geometry nodes node group that returns position in global coordinates
+    """creates a geometry nodes node group that returns position in global (world) coordinates
 
     - useful for defining one GeoNodes modifier and applying it to different objects scattered throughout the scene
         - i.e., small random variations in each neuron
+
+    Parameters
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`        
     """
 
     #group attributes    
@@ -995,6 +1091,18 @@ def position_global():
 
 def remesh():
     """creates a geometry nodes node group similar to remesh modifier
+    
+    - achieved by voxelizing the input
+    
+    Parameters
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`    
     """
 
     #group attributes    
@@ -1058,6 +1166,16 @@ def remesh():
 
 def scale_radial():
     """creates a geometry nodes node group that scales input geometry radially
+
+    Parameters
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`    
     """
 
     #group attributes    
@@ -1121,7 +1239,17 @@ def scale_radial():
 def spiketrain():
     """creates a geometry nodes node group to generate colors for spiketrain
 
-    - result stored as attribute
+    - result stored as attribute to be used downstream for texturing
+
+    Parameters
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`    
     """
 
     #group attributes    
@@ -1353,7 +1481,6 @@ def register():
 
     #dependent
     neurite_branches()
-    # network_container()
     neuron_neurites()
     
 

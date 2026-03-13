@@ -2,8 +2,10 @@
 
 
 ## TODO:
-- [ ] refactor spiketrain material generation (module "spiketrains.py") 
-- [ ] implement random spiketrain generation for random network
+- [ ] testing
+- [ ] tutorials
+- [x] refactor spiketrain material generation (module "spiketrains.py") 
+- [x] implement random spiketrain generation for random network
 - [x] reimplement network generation with new geonodes setup
 - [x] build [shader node tree](./src/snnib/shader_nodes.py)
 
@@ -26,6 +28,11 @@
 
 ## Mappings
 * one time-step ($dt$) in a SNN animation is mapped to a single frame in blender
+
+## Currently supported simulators
+* random network generation
+* [brian2](https://briansimulator.org/)
+
 
 ## FAQ
 ### `Network Container` does not transform to a wireframe when hitting `Build SNN`
