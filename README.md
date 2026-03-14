@@ -1,9 +1,15 @@
 # SNNIB: Spiking Neural Networks Into Blender
 
 
+* this add-on consists of two parts
+    * a python package used create files compatible with `SNNIB`
+    * the blender add-on
+
 ## TODO:
+- [ ] logo
 - [ ] readthedocs
 - [ ] save function (to store network randomly generated with `snnib`)
+
 
 ## Quickstart
 1. in `Viewport Display` expand the right side panel (`Ctrl+n`)
@@ -29,7 +35,8 @@
 * random network generation
 * [brian2](https://briansimulator.org/)
 
-## Compiling the add-on
+## For developers
+### Compiling the add-on
 If you want to compile the add-on yourself (i.e., in case you made some changes to a forked repo and want to compile an updated version) you can do so by calling the following from the repository root:
 ```bash
 bash publish.sh
