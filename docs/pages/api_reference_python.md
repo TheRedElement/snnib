@@ -29,5 +29,5 @@
     :toctree: tocSimulations/
 
     simulations
-    simulation.brian2_simulation.experiment()
+    simulations.brian2_simulation.experiment
 ```
