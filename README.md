@@ -6,10 +6,6 @@
     * a python package used create files compatible with `SNNIB`
     * the blender add-on
 
-## TODO:
-- [ ] readthedocs
-- [ ] save function (to store network randomly generated with `snnib`)
-
 ## Installation
 ### Add-on
 1. download [snnib.zip](./snnib.zip)
@@ -66,3 +62,11 @@ Solution 1:
 > delete the `Geometry Nodes` modifier and hit `Build SNN` again
 Solution 2:
 > copy the nodes from `SnnibNetworkContainer` into the associated `Geometry Nodes` modifier
+
+
+## TODO:
+- [ ] add example animations to README.md
+- [ ] readthedocs
+    - separate quickstart
+    - add tutorials
+- [ ] save function (to store network randomly generated with `snnib`)
