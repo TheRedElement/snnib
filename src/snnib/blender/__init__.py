@@ -1,4 +1,4 @@
-"""submodules that are only working within blender
+"""submodules that are only working within [blender](https://www.blender.org/)
 
 - ONLY WORKS WITHIN BLENDER
 - add-on to generate/visualize spiking neural networks in blender
