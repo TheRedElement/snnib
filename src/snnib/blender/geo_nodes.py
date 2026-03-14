@@ -1009,7 +1009,7 @@ def neuron_neurites():
     n_set_mat = node_group.nodes.new(type="GeometryNodeSetMaterial")
     n_set_mat.location = (x0+800, y0)
     n_set_mat.inputs["Material"].default_value = bpy.data.materials.get("SnnibSpikingNeuron")
-    n_set_mat.parent = utils.geo_nodes_utils.add_todo_node(node_group)
+    # n_set_mat.parent = utils.geo_nodes_utils.add_todo_node(node_group)
 
     n_shade_smooth = node_group.nodes.new(type="GeometryNodeSetShadeSmooth")
     n_shade_smooth.location = (x0+1000, y0)

@@ -1,6 +1,17 @@
 """custom shader node node groups
 
-- naming pattern: Snnib<Name>
+- defines shader nodes node trees
+- makes them available in the [blender](https://www.blender.org/)s shader nodes
+- naming pattern: `Snnib<Name>`
+
+Exceptions
+
+Classes
+
+Functions
+    - `spiking_neuron()` -- shader node tree defining the neuron texture and temporary spiking behavior
+    
+Other Objects
 """
 
 #%%imports
@@ -23,6 +34,20 @@ def spiking_neuron():
     """creates base material for spiking neuron
 
     - this group is used to make created networks customizable in an intuitive manner
+    - applied to neuron AND neurites as one object
+    - contains
+        - definition of neurons' base texture
+        - override with spikes propagating through the network
+        
+    Parameters
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`
     """
 
     #group attributes

@@ -1,29 +1,77 @@
-"""
+"""operators used within the [blender](https://www.blender.org/) UI
+
+- defines and registers various operators that can be used to generate a `SNNIB` network
+
+Exceptions
+    - `SNNIB_OT_build_snn` -- operator to build a `SNNIB` network
+    - `SNNIB_OT_make_template_neuron` -- operator to generate a template neuron
+    - `SNNIB_OT_init_geo_nodes` -- operator to initialize the geo nodes node trees needed in `SNNIB`
+    - `SNNIB_OT_init_shader_nodes` -- operator to initialize the shader nodes node trees needed in `SNNIB`
+
+Classes
+
+Functions
+
+Other Objects
 """
 
 
 #%%imports
 import bpy
-import bmesh
 
 import logging
-import numpy as np
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, force=True)
 
-from . import utils
 from . import network
 from . import DEV
 
 #%%definitions
 class SNNIB_OT_build_snn(bpy.types.Operator):
-    """operator to build a SNN
+    """operator to build a SNN with the current user settings
+
+    - see `self.execute()`
+
+    Attributes
+
+    Inferred Attributes
+
+    Methods
+        - `execute()`
+
+    Dependencies
+        - `bpy`
+        - `logging`
     """
+
     bl_idname = "operator.snnib_build_snn"
     bl_label = "Build SNN"
 
     def execute(self, context):
+        """builds the `SNNIB` network
+
+        - called whenever the respective button is clicked
+        - will
+            - read the input specified in the UI panel
+                - `network_container`
+                - `template_neuron`
+                - `network_file`
+            - initialize a `network.Network`
+            - setup the container
+            - draw the neurons
+            - draw the synapses
+        
+        Parameters
+            - `context`
+                - the current context
+                - not used
+
+        Raises
+
+        Returns
+            - `{'FINISHED'}`
+        """
         
         #catching errors
         if bpy.context.scene.snnib_props.network_container is None:
@@ -54,14 +102,123 @@ class SNNIB_OT_build_snn(bpy.types.Operator):
         
         return {'FINISHED'}
 
+class SNNIB_OT_init_geo_nodes(bpy.types.Operator):
+    """initializes all geometry nodes node trees needed for the add-on to work
+    
+    - see `self.execute()`
+
+    Attributes
+
+    Inferred Attributes
+
+    Methods
+        - `execute()`
+
+    Dependencies
+        - `bpy`
+        - `logging`    
+    """
+
+    bl_idname = "operator.snnib_init_geo_nodes"
+    bl_label = "Initialize SNNIB Geometry Nodes"
+
+    def execute(self, context):
+        """creates geo nodes node trees needed for `SNNIB`
+
+        - will also register the shader nodes
+            - geo nodes use the shader nodes internally
+        
+        Parameters
+            - `context`
+                - the current context
+                - not used
+
+        Raises
+
+        Returns
+            - `{'FINISHED'}`        
+        """
+        from . import geo_nodes
+        from . import shader_nodes
+
+        shader_nodes.register() #NOTE: needs to register first because used in `geo_nodes`!
+        geo_nodes.register()
+
+        return {'FINISHED'}
+
+class SNNIB_OT_init_shader_nodes(bpy.types.Operator):
+    """initializes all shader nodes node trees needed for the add-on to work
+    
+    - see `self.execute()`
+
+    Attributes
+
+    Inferred Attributes
+
+    Methods
+        - `execute()`
+
+    Dependencies
+        - `bpy`
+        - `logging`
+    """
+
+    bl_idname = "operator.snnib_init_shader_nodes"
+    bl_label = "Initialize SNNIB Shader Nodes"
+
+    def execute(self, context):
+        """creates shader nodes node trees needed for `SNNIB`
+        
+        Parameters
+            - `context`
+                - the current context
+                - not used
+
+        Raises
+
+        Returns
+            - `{'FINISHED'}`        
+        """        
+        from . import shader_nodes
+
+        shader_nodes.register()
+
+        return {'FINISHED'}
+
 class SNNIB_OT_make_template_neuron(bpy.types.Operator):
     """operator to create a template neuron
+    
+    - see `self.execute()`
+
+    Attributes
+
+    Inferred Attributes
+
+    Methods
+        - `execute()`
+
+    Dependencies
+        - `bpy`
+        - `logging`
     """
+
     bl_idname = "operator.snnib_make_template_neuron"
     bl_label = "Make a Template Neuron"
 
 
     def execute(self, context):
+        """creates template neuron
+
+        Parameters
+            - `context`
+                - the current context
+                - not used
+
+        Raises
+
+        Returns
+            - `{'FINISHED'}`          
+        """
         name = "SNNIB.Neuron.Template"
         
         if DEV:
@@ -78,34 +235,6 @@ class SNNIB_OT_make_template_neuron(bpy.types.Operator):
         #other settings
         neuron_obj.hide_render = True
         
-        return {'FINISHED'}
-
-class SNNIB_OT_init_geo_nodes(bpy.types.Operator):
-    """initializes all geometry nodes node trees needed for the add-on to work
-    """
-    bl_idname = "operator.snnib_init_geo_nodes"
-    bl_label = "Initialize SNNIB Geometry Nodes"
-
-    def execute(self, context):
-        from . import geo_nodes
-        from . import shader_nodes
-
-        shader_nodes.register() #NOTE: needs to register first because used in `geo_nodes`!
-        geo_nodes.register()
-
-        return {'FINISHED'}
-
-class SNNIB_OT_init_shader_nodes(bpy.types.Operator):
-    """initializes all shader nodes node trees needed for the add-on to work
-    """
-    bl_idname = "operator.snnib_init_shader_nodes"
-    bl_label = "Initialize SNNIB Shader Nodes"
-
-    def execute(self, context):
-        from . import shader_nodes
-
-        shader_nodes.register()
-
         return {'FINISHED'}
 
 #%%registration

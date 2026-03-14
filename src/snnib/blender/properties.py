@@ -1,10 +1,38 @@
+"""defines custom properties used by `SNNIB`
+
+- also defines custom objects
+
+Exceptions
+
+Classes
+    - `SnnibProperties` -- custom properties of `SNNIB`
+
+Functions
+
+Other Objects
+"""
+
 #%%imports
 import bpy
 
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 #%%definitions
 class SnnibProperties(bpy.types.PropertyGroup):
-    """custom properties used in the UI
+    """custom properties used in `SNNIB`
+
+    Attributes
+
+    Inferred Attributes
+
+    Methods
+
+    Dependencies
+        - `bpy`
+        - `logging`
     """
 
     axon_length: bpy.props.FloatProperty(
@@ -87,4 +115,5 @@ def unregister():
     del bpy.types.Scene.snnib_props
 
     #custom objects
+    del bpy.types.Scene.template_neuron
     del bpy.types.Scene.network_container

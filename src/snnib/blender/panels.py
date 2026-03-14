@@ -1,4 +1,15 @@
-"""
+"""defines the [blender](https://www.blender.org/) UI panels
+
+- creates panels and populates them with inputs and operators
+
+Exceptions
+
+Classes
+    - `SNNIB_PT_Panel` -- main snnib panel to generate networks
+
+Functions
+
+Other Objects
 """
 
 
@@ -15,7 +26,21 @@ from . import bl_info
 #%%definitions
 class SNNIB_PT_Panel(bpy.types.Panel):
     """panel hosting the add-on
+
+    - see `draw()`
+
+    Attributes
+
+    Inferred Attributes
+
+    Methods
+        - `draw()` -- draws and populates the panel
+
+    Dependencies
+        - `bpy`
+        - `logging`
     """
+
     bl_label = bl_info["name"]
     bl_idname = "panel.snnib"
     bl_space_type = "VIEW_3D"
@@ -23,6 +48,16 @@ class SNNIB_PT_Panel(bpy.types.Panel):
     bl_category = bl_info["name"]
 
     def draw(self, context):
+        """draws and populates the panel
+
+        Parameters
+            - `context`
+                - the current context
+
+        Raises
+
+        Returns
+        """
         layout = self.layout
         scene = context.scene
         
@@ -66,6 +101,7 @@ class SNNIB_PT_Panel(bpy.types.Panel):
         box3.row().prop(context.scene.snnib_props, "network_file")
         layout.separator()
         
+        return
 
 
 #%%registration

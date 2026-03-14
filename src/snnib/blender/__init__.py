@@ -1,12 +1,22 @@
 """submodules that are only working within blender
 
-add-on to generate/visualize spiking neural networks
-
-Notes
-- https://docs.blender.org/api/current/index.html
-- conventions:
-    - https://docs.blender.org/api/current/info_best_practice.html
+- ONLY WORKS WITHIN BLENDER
+- add-on to generate/visualize spiking neural networks in blender
+- conventions
+    - follow  [blender](https://www.blender.org/)s [best practices](https://docs.blender.org/api/current/info_best_practice.html)
     - classes: `CATEGORY_<type>T_<name>`
+
+Modules
+- `geo_nodes`
+- `network`
+- `operators`
+- `panels`
+- `properties`
+- `shader_nodes`
+- `spiketrain`
+
+Subpackages
+- `utils` -- utility functions to efficiently deal with specific [blender](https://www.blender.org/) objects
 
     
 LICENSE:

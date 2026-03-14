@@ -1,18 +1,58 @@
-"""
+"""utilities to manipulate blenders geometry nodes
+
+Exceptions
+
+Classes
+
+Functions
+    - `add_todo_node()`
+    - `copy_geonodes()`
+    - `clear_node_group()`
+    - `create_node_group()`
+    - `delete_geonode_groups()`
+    - `exists_node_group()`
+    - `get_node_by_label()`
+    - `set_node_curve()`
+
+Other Objects
 """
 
 #%%imports
 import bpy
 
 import logging
-from typing import List, Union
+from typing import List, Tuple, Union
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 #%%definitions
-def add_todo_node(node_group, location=(0,0)):
+def add_todo_node(
+    node_group:bpy.types.GeometryNodeTree,
+    location:Tuple[float,float]=(0.0,0.0),
+    ) -> bpy.types.Node:
     """adds a frame denoting a TODO to the node tree
+
+    Parameters
+        - `node_group`
+            - `bpy.types.GeometryNodeTree`
+            - geo nodes node tree to attach the node to
+        - `location`
+            - `Tuple[float,float]`, optional
+            - location as `(x,y)` of the node
+            - the default is `(0.0,0.0)`
+
+    Raises
+
+    Returns
+        - `n_todo`
+            - `bpy.types.Node`
+            - created node
+
+    Dependencies
+        - `bpy`
+        - `logging`
+        - `typing`
     """
     n_todo = node_group.nodes.new(type="NodeFrame")
     n_todo.label = "TODO"
@@ -26,7 +66,30 @@ def add_todo_node(node_group, location=(0,0)):
 def copy_geonodes(
     src:bpy.types.Object, targ:bpy.types.Object,
     ) -> bpy.types.NodesModifier:
-    """sets the geonodes modifier of `targ` to the same as `src`
+    """sets the geo nodes modifier of `targ` to the same as `src`
+
+    - only applies to first found geo nodes modifier
+    - no action if no geo nodes modifier found
+
+    Parameters
+        - `src`
+            - `bpy.types.Object`
+            - source to copy geo nodes modifier from
+        - `targ`
+            - `bpy.types.Object`
+            - target to copy geo nodes modifier to
+
+    Raises
+
+    Returns
+        - `targ_gn_mod`
+            - `bpy.types.NodesModifier`
+            - created geo nodes modifier
+
+    Dependencies
+        - `bpy`
+        - `logging`
+        - `typing`    
     """
     
     #get source modifier
@@ -48,11 +111,27 @@ def copy_geonodes(
     
     return targ_gn_mod
 
-def clear_node_group(group_name:str):
+def clear_node_group(
+    group_name:str
+    ):
     """clears the node group of `group_name`
 
     - used to avoid cluttering in blender file when developing new node group
     - allow to stay in node group and see changes when rerunning scripts
+
+    Parameters
+        - `group_name`
+            - `str`
+            - name of the targeted geo nodes group
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`
+        - `typing`       
     """
     for ng in bpy.data.node_groups:
         if group_name==ng.name:
@@ -61,12 +140,34 @@ def clear_node_group(group_name:str):
             ng.interface.clear()
     return {'FINISHED'}
 
-def create_node_group(group_name:str, dev:bool) -> Union[bpy.types.GeometryNodeTree,bpy.types.ShaderNodeTree]:
+def create_node_group(
+    group_name:str, dev:bool
+    ) -> bpy.types.GeometryNodeTree:
     """returns existing node group if `dev`, otherwise always creates new one
     
     - helper creating node groups based on specifications
     - overrides existing nodes when `dev==True` (creates new group if nonexistent)
     - creates new group without overriding if `dev!=True`
+
+    Parameters
+        - `group_name`
+            - `str`
+            - name of the targeted geo nodes group
+        - `dev`
+            - `bool`, optional
+            - flag denoting if script is ran in development mode
+
+    Raises
+
+    Returns
+        - `node_group`
+            - `bpy.types.GeometryNodeTree`
+            - created geo nodes node group
+
+    Dependencies
+        - `bpy`
+        - `logging`
+        - `typing`      
     """
     #node creation
     if dev:
@@ -82,10 +183,26 @@ def create_node_group(group_name:str, dev:bool) -> Union[bpy.types.GeometryNodeT
 
     return node_group
 
-def delete_geonode_groups(group_name:str):
+def delete_geonode_groups(
+    group_name:str
+    ):
     """deletes all geometry node node groups with name `group_name`
     
     - used before generating new groups to avoid cluttering blender
+
+    Parameters
+        - `group_name`
+            - `str`
+            - name of the targeted geo nodes group
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`
+        - `typing`          
     """
     
     #get all matching goroups
@@ -97,24 +214,98 @@ def delete_geonode_groups(group_name:str):
 
     return {'FINISHED'}
 
-def exists_node_group(group_name:str):
+def exists_node_group(
+    group_name:str
+    ):
     """returns flag whether node group of `group_name` already exists
 
     - used to avoid cluttering in blender file when developing new node group
         - allows creation of new group only if it is not existing already
+
+    Parameters
+        - `group_name`
+            - `str`
+            - name of the targeted geo nodes group
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`
+        - `typing`           
     """
     return any([group_name==ng.name for ng in bpy.data.node_groups])
 
-def get_node_by_label(node_tree, label):
+def get_node_by_label(
+    node_tree:bpy.types.GeometryNodeTree,
+    label:str,
+    ) -> bpy.types.Node:
     """returns first node in `node_tree` that matches `label`
+
+    Parameters
+        - `node_tree`
+            - `bpy.types.GeometryNodeTree`
+            - geometry nodes node tree to extract node from
+        - `label`
+            - `str`
+            - label of the node to search for
+
+    Raises
+
+    Returns
+        - `node`
+            - `bpy.types.Node`
+            - extracted node
+            - `None` if no matching node was found
+
+    Dependencies
+        - `bpy`
+        - `logging`
+        - `typing`       
     """
     for node in node_tree.nodes:
         if node.label == label:
             return node
     return None
 
-def set_node_curve(node:bpy.types.ShaderNodeRGBCurve, channel_index:int, pts:List[List[float]], handle_types:List[str]=None):
+def set_node_curve(
+    node:bpy.types.ShaderNodeRGBCurve,
+    channel_index:int,
+    pts:List[List[float]],
+    handle_types:List[str]=None
+    ):
     """overrides node curve (i.e. RGB Curves node) with new curve
+
+    Parameters
+        - `node`
+            - `bpy.types.ShaderNodeRGBCurve`
+            - node to update the curve of
+        - `channel_index`
+            - `int`
+            - index of the channel to target
+                - 0 > r
+                - 1 > g
+                - 2 > b
+                - 3 > combined
+        - `pts`
+            - `List[List[float]]`
+            - coordinates to place the control points at
+        - `handle_types`
+            - `List[str]`, optional
+            - handle types to use for each point in `pts`
+            - the default is `None`
+                - uses default settings
+            
+    Raises
+
+    Returns
+
+    Dependencies
+        - `bpy`
+        - `logging`
+        - `typing`     
     """
     curve = node.mapping.curves[channel_index]
     
