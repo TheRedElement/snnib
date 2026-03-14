@@ -161,7 +161,7 @@ autosummary_generate = True
 
 #mock imports (creation of dummy packages so import succeeds)
 autodoc_mock_imports = [
-    #`bpy` only exists in blender environment
+    #blender modules (only exists in blender environment)
     "bmesh",
     "bpy",
     "bpy.context",
@@ -171,6 +171,7 @@ autodoc_mock_imports = [
     "bpy.props"
     "bpy.types",
     "bpy.utils",
+    "mathutils",
 ]
 
 #myst_parser extensions
