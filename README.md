@@ -2,13 +2,8 @@
 
 
 ## TODO:
-- [x] testing
-- [x] tutorials
+- [ ] readthedocs
 - [ ] save function (to store network randomly generated with `snnib`)
-- [x] refactor spiketrain material generation (module "spiketrains.py") 
-- [x] implement random spiketrain generation for random network
-- [x] reimplement network generation with new geonodes setup
-- [x] build [shader node tree](./src/snnib/shader_nodes.py)
 
 ## Quickstart
 1. in `Viewport Display` expand the right side panel (`Ctrl+n`)
@@ -24,16 +19,21 @@
     1. provide a `Network Container`
         1. I recommend a cuboid because the add-on uses the objects bounding box to define the neuron positions
     2. adjust the remaining settings or styling in the `Template Neuron`s `Geometry Nodes`
-5. **make sure to `Apply Scale` on the `Network Container` (and potentially also the `Template Neuron`)
+5. **make sure to `Apply Scale` on the `Network Container` (and potentially also the `Template Neuron`)**
 6. hit `Build SNN` to generate your network
 
 ## Mappings
-* one time-step ($dt$) in a SNN animation is mapped to a single frame in blender
+* one time-step ($dt$) in a SNN simulation is mapped to a single frame in blender
 
 ## Currently supported simulators
 * random network generation
 * [brian2](https://briansimulator.org/)
 
+## Compiling the add-on
+If you want to compile the add-on yourself (i.e., in case you made some changes to a forked repo and want to compile an updated version) you can do so by calling the following from the repository root:
+```bash
+bash publish.sh
+```
 
 ## FAQ
 ### `Network Container` does not transform to a wireframe when hitting `Build SNN`
