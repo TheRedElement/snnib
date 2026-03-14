@@ -1,12 +1,12 @@
 # SNNIB: Spiking Neural Networks Into Blender
 
+![](./gfx/snnib_logo.svg)
 
 * this add-on consists of two parts
     * a python package used create files compatible with `SNNIB`
     * the blender add-on
 
 ## TODO:
-- [ ] logo
 - [ ] readthedocs
 - [ ] save function (to store network randomly generated with `snnib`)
 
