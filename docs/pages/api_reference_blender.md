@@ -15,7 +15,7 @@
     :recursive:
     :toctree: tocBlender/
 
-    .
+    blender
 ```
 
 ### geo_nodes

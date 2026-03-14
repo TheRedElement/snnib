@@ -14,7 +14,7 @@
     :recursive:
     :toctree: tocSnnib/
 
-    .
+    snnib
 ```
 
 ### brian2_utils
