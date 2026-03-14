@@ -104,22 +104,22 @@ def copy_files(app):
     root = Path("../")
     docs = Path(app.srcdir)
 
-    #README.md + git md => myst md
-    src = root
-    dst = docs
-    dst.mkdir(parents=True, exist_ok=True)
-    f = "README.md"
-    text = (src / f).read_text("utf-8")
-    text = re.sub(r"^\>\s+", r"", text, flags=re.MULTILINE)
-    text = re.sub(r"\[!(\w+)\]", lambda m: "{" + m.group(1).lower() + "}", text, flags=re.MULTILINE)
-    text = re.sub(r"<!-- block -->\n(.*?)<!-- block -->", r"```\1```", text, flags=re.DOTALL)   #blocks marked with `<!-- block -->``
-    (dst / f).write_text(text, encoding="utf-8")
+    # #README.md + git md => myst md
+    # src = root
+    # dst = docs
+    # dst.mkdir(parents=True, exist_ok=True)
+    # f = "README.md"
+    # text = (src / f).read_text("utf-8")
+    # text = re.sub(r"^\>\s+", r"", text, flags=re.MULTILINE)
+    # text = re.sub(r"\[!(\w+)\]", lambda m: "{" + m.group(1).lower() + "}", text, flags=re.MULTILINE)
+    # text = re.sub(r"<!-- block -->\n(.*?)<!-- block -->", r"```\1```", text, flags=re.DOTALL)   #blocks marked with `<!-- block -->``
+    # (dst / f).write_text(text, encoding="utf-8")
 
     #graphics
     src = root / "gfx"
     dst = docs / "gfx"
     dst.mkdir(parents=True, exist_ok=True)
-    for f in ["0901_snii_elasticc.png", "1189_snia_elasticc.png", "2025_tde_elasticc.png", "lstein_logo.svg", "sin_simulated.png"]:
+    for f in []:
         shutil.copy2(src / f, dst / f)
 
     return
