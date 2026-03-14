@@ -4,7 +4,7 @@
 # API Reference (Python Package)
 
 ```{eval-rst}
-.. currentmodule:: snnib.blender
+.. currentmodule:: snnib
 ```
 
 ## snnib
