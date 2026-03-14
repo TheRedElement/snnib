@@ -1,10 +1,28 @@
 """simple spiking neural network simulation in `brian2`
 
 - used to generate an input file for `snnib`
+- the whole experiment is based on an example from the KU Principles of Brain Computation at Graz University of Technology
+
+Exceptions
+
+Classes
+
+Functions
+    - `poisson_generator()` -- draws events from a poisson point process
+    - `generate_stimulus()` -- generates input spikes
+    - `truncnorm()` -- truncated normal distribution
+    - `get_rates()` -- returns spike rates
+    - `get_spiketrains()` -- returns spiketrains
+    - `lif_ng()` -- base definition of a LIF neuron group
+    - `stp_syn()` -- base definition of STP synapse group
+    - `analyze()` -- executes analysis of the simulated network
+    - `check_stp()` -- check if STP is implemented as expected
+    - `experiment()` -- run the entire experiment
+
+Other Objects
 """
 
 #%%imports
-import argparse
 import brian2
 from brian2 import NeuronGroup, PoissonInput, SpikeGeneratorGroup, SpikeMonitor, StateMonitor, Synapses
 from brian2 import mV, pA, pF, ms, second, Hz, Gohm
@@ -13,20 +31,21 @@ import importlib
 import logging
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from typing import Any, Literal
+from typing import Any, List, Literal, Tuple
 
 logging.basicConfig(level=logging.WARN, force=True)
 local_logger = logging.getLogger(__name__)
 local_logger.setLevel(logging.DEBUG)
 
 from snnib import io as snio
+from snnib import brian2_utils
 
 importlib.reload(snio)
 
-#%%from tasksheet
+#%%directly from course
 def poisson_generator(rate, t_lim, unit_ms=False):
     """
-    Draw events from a Poisson point process.
+    draw events from a poisson point process.
 
     Note: the implementation assumes at t=t_lim[0], although this spike is not
     included in the spike list.
@@ -126,37 +145,40 @@ def truncnorm(
     - function to generate samples from a truncated normal distribution
 
     Parameters
-        - mu
-            - float, optional
+        - `mu`
+            - `float`, optional
             - mean
-            - the default is 0
-        - sigma
-            - float, optional
+            - the default is `0`
+        - `sigma`
+            - `float`, optional
             - standard deviation
-            - the default is 1
-        - xmin
-            - float, optional
+            - the default is `1`
+        - `xmin`
+            - `float`, optional
             - lower truncation bound
             - the default is None
-                - no trunctation
-        - xmax
-            - float, optional
+                - no truncation
+        - `xmax`
+            - `float`, optional
             - upper truncation bound
             - the default is None
-                - no trunctation
-        - size
-            - tuple, optional
+                - no truncation
+        - `size`
+            - `tuple`, optional
             - shape of the array to generate
-            - the default is 1
-        - verbose
-            - int, optional
+            - the default is `1`
+        - 'verbose'
+            - `int`, optional
             - verbosity level
-            - the default is 0
+            - the default is `0`
 
     Returns
-        - out
-            - np.ndarray
+        - `out`
+            - `np.ndarray`
             - samples drawn from a truncated normal distribution
+    Dependencies
+        - `numpy`
+
     """
     
     if xmin is None: xmin = -np.inf
@@ -172,7 +194,38 @@ def truncnorm(
         
     return out
 
-def get_rates(spike_mon, t_max, bin_size=20 * ms):
+def get_rates(
+    spike_mon:brian2.SpikeMonitor,
+    t_max:brian2.Quantity,
+    bin_size:brian2.Quantity=20 * ms
+    ) -> Tuple[List[brian2.Quantity],List[brian2.Quantity]]:
+    """returns spike rates in the interval `bin_size`
+
+    Parameters
+        - `spike_mon`
+            - `brian2.SpikeMonitor`
+            - spike monitor to compute rates for
+        - `t_max`
+            - `brian2.Quantity`
+            - maximum time to compute rates up to
+        - `bin_size`
+            - `brian2.Quantity`, optional
+            - size of the bins to use as reference for rate computation
+            - the default is `20 * ms`
+
+    Raises
+
+    Returns
+        - `t_`
+            - `List[brian2.Quantity]`
+            - time representing a bin
+        - `f_`
+            - `List[brian2.Quantity]`
+            - frequency in a bin
+
+    Dependencies
+        - `numpy`
+    """
     spikes = spike_mon.t[spike_mon.t < t_max]
 
     t_ = np.arange(0, t_max / ms, bin_size / ms) * ms
@@ -184,13 +237,6 @@ def get_rates(spike_mon, t_max, bin_size=20 * ms):
 
     return t_, f_
 
-def get_spiketrains(spike_mon, t_max, n2plot):
-    
-    times, ids = spike_mon.t[:], spike_mon.i[:]
-    mask = (times <= t_max) & (ids < n2plot)
-    
-    return times[mask], ids[mask]
-
 def lif_ng(
     n:int,
     u_rest, u_reset, u_th,
@@ -200,6 +246,40 @@ def lif_ng(
     u0=None,
     ) -> NeuronGroup:
     """returns generated LIF neuron group
+
+    - base definition of simple LIF neuron for easy generation of several similar neuron groups
+    
+    Parameters
+        - `n`
+            - `int`
+            - number of neurons in the group
+        - `u_rest`
+            - resting potential
+        - `u_reset`
+            - reset potential
+        - `u_th`
+            - threshold voltage
+        - `R_m`
+            - membrane resistance
+        - `tau_m`
+            - membrane time constant
+        - `delta_abs`
+            - refractory period
+        - `tau_syn`
+            - synaptic time constant
+        - `u0`
+            - initial membrane potential
+
+    Raises
+
+    Returns
+        - `neurons`
+            - `NeuronGroup`
+            - generated neuron group
+
+    Dependencies
+        - `brian2`
+
     """
 
     eqs = """
@@ -236,6 +316,51 @@ def stp_syn(
     connect_i:Any=None, connect_j:Any=None,
     drive:Literal["event-driven","clock-driven"]="event-driven",
     ) -> Synapses:
+    """returns generated STP synapses
+
+    - base definition of simple STP synapses for easy generation of several similar synapse groups
+    
+    Parameters
+        - `ng_pre`
+            - `int`
+            - number of pre synaptic neurons
+        - `ng_post`
+            - `int`
+            - number of post synaptic neurons
+        - `w_mean`
+            - mean of a truncated normal distribution
+            - used for initializing synapse weights
+        - `w_min`
+            - minimum of a truncated normal distribution
+            - used for initializing synapse weights
+        - `w_max`
+            - maximum of a truncated normal distribution
+            - used for initializing synapse weights
+        - `delay`
+            - delay of the synapse
+        - `U`
+            - indicates fraction of resources to use fro some spike
+        - `tau_fac`
+            - facilitation time constant
+        - `tau_rec`
+            - recovery time constant
+        - `connect_i`
+            - expression defining connectivity for pre synaptic neurons
+        - `connect_i`
+            - expression defining connectivity for post synaptic neurons
+        - `drive`
+            - specifies simulation driver
+            
+    Raises
+
+    Returns
+        - `syn`
+            - `Synapses`
+            - generated synapses
+
+    Dependencies
+        - `brian2`    
+    """
 
     syn_eqs = f"""
         w : ampere                              #weight efficacy
@@ -271,9 +396,33 @@ def stp_syn(
     
     return syn
 
-def analyze(t_sim,
-    spike_mon_E, spike_mon_I, spike_mon_in
+def analyze(
+    t_sim:brian2.Quantity,
+    spike_mon_E:brian2.SpikeMonitor, spike_mon_I:brian2.SpikeMonitor, spike_mon_in:brian2.SpikeMonitor
     ):
+    """runs a brief analysis of the simulation
+
+    Parameters
+        - `t_sim`
+            - simulation time
+        - `spike_mon_E`
+            - `brian2.SpikeMonitor`
+            - spike monitor of the excitatory neurons
+        - `spike_mon_I`
+            - `brian2.SpikeMonitor`
+            - spike monitor of the inhibitory neurons
+        - `spike_mon_in`
+            - `brian2.SpikeMonitor`
+            - spike monitor of the input neurons
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `brian2`
+        - `plotly`
+    """
 
     #average spiking frequency
     f_E = len(spike_mon_E) / t_sim / len(spike_mon_E.source)
@@ -289,9 +438,9 @@ def analyze(t_sim,
     t_in, f_in = get_rates(spike_mon_in, t2plot, bin_size=20 * ms)
     t_E, f_E = get_rates(spike_mon_E, t2plot, bin_size=20 * ms)
     t_I, f_I = get_rates(spike_mon_I, t2plot, bin_size=20 * ms)
-    ts_in, ids_in = get_spiketrains(spike_mon_in, t2plot, n2plot)
-    ts_E, ids_E = get_spiketrains(spike_mon_E, t2plot, n2plot)
-    ts_I, ids_I = get_spiketrains(spike_mon_E, t2plot, n2plot)
+    ts_in, ids_in = brian2_utils.get_spiketrains(spike_mon_in, t2plot, n2plot)
+    ts_E, ids_E = brian2_utils.get_spiketrains(spike_mon_E, t2plot, n2plot)
+    ts_I, ids_I = brian2_utils.get_spiketrains(spike_mon_E, t2plot, n2plot)
 
     series = [
         ("Input",ts_in,ids_in,t_in,f_in*np.nan,),
@@ -327,8 +476,22 @@ def analyze(t_sim,
     return
 
 def check_stp():
+    """creates plot to check if STP is implemented correctly
+
+    Parameters
+
+    Raises
+
+    Returns
+
+    Dependencies
+        - `brian2`
+        - `plotly`
+    """
 
     t_sim = 250 * ms
+
+    brian2.defaultclock.dt = 0.1 * ms
 
     net = brian2.Network()
 
@@ -422,7 +585,45 @@ def check_stp():
 
     return
 
-def experiment():
+def experiment(idx:int=3):
+    """runs the experiment as a whole
+
+    Parameters
+        - `idx`
+            - `int`, optional
+            - which configuration of the experiment to run
+            - configurations
+                - `0`: "default"
+                - `1`: "optimized" (huge)
+                - `2`: "medium"
+                - `3`: "tiny"
+            - the default is `3`
+
+    Raises
+
+    Returns
+        - `net`
+            - `brian2.Network`
+            - created network
+        - `t_sim`
+            - `brian2.Quantity`
+            - simulation time
+        - `dt`
+            - `brian2.Quantity`
+            - simulation time step
+        - `params`
+            - `dict`
+            - parameters of the configuration
+        - `parts`
+            - `list`
+            - parts of `net`
+            - also present within `net`
+
+    Dependencies
+        - `brian2`
+        - `numpy`
+        - `plotly`
+    """
 
     #experiment settings
     params = [
@@ -458,7 +659,7 @@ def experiment():
             delay1="5 * ms + 20 * ms * rand()",
             delay2="1 * ms + 3 * ms * rand()",
         ),
-    ][2]
+    ][idx]
     
     #global parameters
     t_sim = params["t_sim"]
@@ -571,16 +772,5 @@ def experiment():
         spike_mon_E, spike_mon_I, spike_mon_in
     )
     
-    snio.brian22snnib(net, t_sim=t_sim, dt=dt,  save=f"brian2_{params['setting']}.json") #json to avoid external dependencies of blender
+    return net, t_sim, dt, params, parts
 
-    return
-
-
-#%%main
-def main():
-    # check_stp()
-    experiment()
-    return
-
-if __name__ == "__main__":
-    main()

@@ -13,6 +13,7 @@ Modules
 
 Subpackages
 - `blender` -- [blender](https://www.blender.org/) add-on; only available from within [blender](https://www.blender.org/)
+- `simulations` -- simulation presets for testing and tutorials
 
 
     

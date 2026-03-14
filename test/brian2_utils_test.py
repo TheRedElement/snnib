@@ -3,7 +3,7 @@ import brian2
 from brian2 import (
     PoissonGroup,
     SpikeMonitor,
-    Hz,
+    Hz, ms
 )
 import logging
 import pytest
@@ -17,12 +17,13 @@ import routines
 
 
 #%%global vars
+t_sim = 50 * ms
 (
     #actual outputs
     net, G1, G2, S, M1, M2,
     #outputs not contained in `net` (to stress-test)
     G_detached,
-) = routines.brian2_sim()
+) = routines.brian2_sim(t_sim=t_sim)
 
 #%%tests
 class Test_get_spike_monitor:
@@ -58,3 +59,36 @@ class Test_get_spike_monitor:
     def test_output(self, action):
         pr, tr = action
         assert pr == tr
+
+
+class Test_get_spiketrain:
+
+    @pytest.fixture(
+        params=[
+            (M1, t_sim, 5,
+                np.array([ 4.8,  4.8,  4.8,  9.8,  9.8,  9.8, 14.8, 14.8, 14.8, 19.8, 19.8, 19.8, 24.8, 24.8, 24.8, 29.8, 29.8, 29.8, 34.8, 34.8, 34.8, 39.8, 39.8, 39.8, 44.8, 44.8, 44.8, 49.8, 49.8, 49.8]) * ms,
+                np.array([0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0,1, 2, 0, 1, 2, 0, 1, 2]),
+            ),
+            (M2, t_sim, 5,
+                np.array([15., 15., 15., 30., 30., 30., 45., 45., 45.]) * ms,
+                np.array([0, 1, 2, 0, 1, 2, 0, 1, 2]),
+            ),
+            (M1, 25 * ms, 2,
+                np.array([ 4.8,  4.8,  9.8,  9.8, 14.8, 14.8, 19.8, 19.8, 24.8, 24.8]) * ms,
+                np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1]),
+            ),
+        ]
+    )
+    def action(self, request):
+        #arrange
+
+        #act
+        M, t_max, n2plot, t_true, i_true = request.param
+        t_pred, i_pred = brian2_utils.get_spiketrains(M, t_max, n2plot)
+        return (t_pred, i_pred), (t_true, i_true)
+    
+    def test_output(self, action):
+        (t_pr, i_pr), (t_tr, i_tr) = action
+
+        assert t_pr / ms == pytest.approx(t_tr / ms)    #remove units to avoid precision errors
+        assert np.all(i_pr == i_tr)
