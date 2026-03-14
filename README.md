@@ -2,6 +2,18 @@
 
 ![](gfx/snnib_logo.svg)
 
+<!-- local table of contents -->
+```{contents} Table of Contents
+:local:
+:depth: 3
+```
+
+<!-- block -->
+> [!NOTE]
+> This page summarizes a basic rundown of `SNNIB`.
+> In principle `SNNIB` can be used like any other blender add-on
+<!-- block -->
+
 * this add-on consists of two parts
     * a python package used create files compatible with `SNNIB`
     * the blender add-on
@@ -19,9 +31,9 @@
 ```
 
 ## Example Renders
-| Imported [brian2](https://briansimulator.org/) network | Randomly Generated Network|
+| Randomly Generated Network | Imported [brian2](https://briansimulator.org/) network |
 | :-: | :-: |
-|![](renders/SnnibBrian2Tiny0001-0120.gif)|![](renders/SnnibRandom0001-0120.gif)|
+|![](renders/SnnibRandom0001-0120.gif)|![](renders/SnnibBrian2Tiny0001-0120.gif)|
 
 ## Quickstart
 
@@ -77,8 +89,6 @@ bash publish.sh
 ```
 
 ## TODO:
-- [ ] add example animations to README.md
-- [ ] readthedocs
-    - separate quickstart
-    - add tutorials
+- [ ] example animations to README.md
+    - large brian2 network
 - [ ] save function (to store network randomly generated with `snnib`)
