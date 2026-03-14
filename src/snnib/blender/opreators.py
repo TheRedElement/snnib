@@ -3,12 +3,12 @@
 - defines and registers various operators that can be used to generate a `SNNIB` network
 
 Exceptions
+
+Classes
     - `SNNIB_OT_build_snn` -- operator to build a `SNNIB` network
     - `SNNIB_OT_make_template_neuron` -- operator to generate a template neuron
     - `SNNIB_OT_init_geo_nodes` -- operator to initialize the geo nodes node trees needed in `SNNIB`
     - `SNNIB_OT_init_shader_nodes` -- operator to initialize the shader nodes node trees needed in `SNNIB`
-
-Classes
 
 Functions
 

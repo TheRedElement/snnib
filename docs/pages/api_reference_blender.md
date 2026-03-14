@@ -48,6 +48,15 @@
     :toctree: tocBlender/
 
     network
+```
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlender/
+
+    network
     network.Network
     network.Network.__init__
     network.Network._get_mean_outconnection
@@ -56,6 +65,80 @@
     network.Network.setup_container
     network.Network.draw_neurons
     network.Network.draw_synapses
+```
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlender/
 
     network.generate_template_neuron
+```
+
+## operators
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlender/
+
+    operators
+    operators.SNNIB_OT_build_snn
+    operators.SNNIB_OT_build_snn.execute
+    operators.SNNIB_OT_make_template_neuron
+    operators.SNNIB_OT_make_template_neuron.execute
+    operators.SNNIB_OT_init_geo_nodes
+    operators.SNNIB_OT_init_geo_nodes.execute
+    operators.SNNIB_OT_init_shader_nodes
+    operators.SNNIB_OT_init_shader_nodes.execute
+
+```
+
+## panels
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlender/
+
+    panels
+    panels.SNNIB_PT_Panel
+```
+
+## properties
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlender/
+
+    properties
+    properties.SnnibProperties
+```
+
+## shader nodes
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlender/
+
+    shader_nodes
+    shader_nodes.spiking_neuron
+```
+## spiketrain
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlender/
+
+    spiketrain
+    shader_nodes.make_spike_texture
 ```
