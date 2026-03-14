@@ -15,8 +15,18 @@
     :recursive:
     :toctree: tocSnnib/
 
+    snnib
     brian2_utils.get_spike_monitor
-    
+    brian2_utils.get_spiketrains
+```
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocSnnib/
+
+    io.brian22snnib
 ```
 
 
