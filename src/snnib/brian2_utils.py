@@ -49,6 +49,10 @@ def get_spike_monitor(
         - `logging`
         
     """
+    #checks
+    assert isinstance(net, brian2.Network)
+    assert isinstance(group, brian2.groups.Group)
+
     for obj in net.objects:
         if isinstance(obj, brian2.SpikeMonitor) and obj.source is group:
             return obj

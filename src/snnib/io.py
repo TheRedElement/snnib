@@ -28,6 +28,7 @@ def brian22snnib(
     net:brian2.Network,
     t_sim:brian2.Quantity, dt:brian2.Quantity,
     save:str=False,
+    seed:int=None,
     ):
     """saves `net` to `snnib` compatible json file
 
@@ -69,6 +70,19 @@ def brian22snnib(
     
     
     """
+    
+    #checks
+    assert isinstance(net, brian2.Network)
+    assert isinstance(t_sim, brian2.Quantity)
+    assert isinstance(dt, brian2.Quantity)
+    assert isinstance(save, (str,bool))
+    if isinstance(save, str):
+        assert save.endswith(".json"), "`save` has to be a json file"
+    
+    #setup rng
+    Rng = np.random.default_rng(seed)
+
+    #get network objects
     ngs = [obj for obj in net.objects if isinstance(obj, brian2.NeuronGroup)]
     sgs = [obj for obj in net.objects if isinstance(obj, brian2.Synapses)]
 
@@ -84,7 +98,10 @@ def brian22snnib(
         synapses_snnib["pre"]       += sg.i[:].tolist()
         synapses_snnib["post"]      += sg.j[:].tolist()
         synapses_snnib["w"]         += np.asarray(sg.w[:]).tolist() #remove unit
-        synapses_snnib["w_unit"]    += [str(sg.w[0].dimensions)] * sg.i[:].shape[0]
+        if isinstance(sg.w[0], brian2.Quantity):
+            synapses_snnib["w_unit"]    += [str(sg.w[0].dimensions)] * sg.i[:].shape[0]
+        else:
+            synapses_snnib["w_unit"]    += [""] * sg.i[:].shape[0]
 
     #reformat
     synapses_snnib = list(zip(*synapses_snnib.values()))   #transpose
@@ -95,9 +112,9 @@ def brian22snnib(
         neurons_snnib["id"] += ng.i[:].tolist()
         
         #generate random coordinates
-        neurons_snnib["x"] += ((np.random.rand(ng.i.shape[0])-0.5)*2).tolist()
-        neurons_snnib["y"] += ((np.random.rand(ng.i.shape[0])-0.5)*2).tolist()
-        neurons_snnib["z"] += ((np.random.rand(ng.i.shape[0])-0.5)*2).tolist()
+        neurons_snnib["x"] += ((Rng.random(ng.i.shape[0])-0.5)*2).tolist()
+        neurons_snnib["y"] += ((Rng.random(ng.i.shape[0])-0.5)*2).tolist()
+        neurons_snnib["z"] += ((Rng.random(ng.i.shape[0])-0.5)*2).tolist()
 
         #get spiketrains
         spiketrains = list(snnib_b2u.get_spike_monitor(net, ng).spike_trains().values())
