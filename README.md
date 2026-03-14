@@ -6,21 +6,36 @@
     * a python package used create files compatible with `SNNIB`
     * the blender add-on
 
-## Installation
+* if you find this add-on useful in your work, an acknowledgement would be appreciated:
+```latex
+@software{PY_Steinwender2026_snnib,
+	author    = {{Steinwender}, Lukas},
+	title     = {SNNIB: Spiking Neural Network Into Blender},
+	month     = Mar,
+	year      = 2026,
+	version   = {latest},
+	url       = {https://github.com/TheRedElement/snnib.git}
+}
+```
+
+## Example Renders
+|Imported [brian2](https://briansimulator.org/) network| Randomly Generated Network|
+| :-: | :-: |
+|![](./renders/SnnibBrian2Tiny0001-0120.gif) | ![](./renders/SnnibRandom0001-0120.gif) |
+
+## Quickstart
+
+> more detailed documentation can be found in the [readthedocs page](https://snnib.readthedocs.io/en/latest/index.html)
+
 ### Add-on
+#### Installation
 1. download [snnib.zip](./snnib.zip)
 2. in [blender](https://blender.org/)
     1. navigate to `Edit > Preferences > Add-ons`
     2. drag and drop the downloaded file ([snnib.zip](./snnib.zip)) into the window
     3. click `OK`
 
-### Python package
-* simply install via `pip`
-```bash
-pip3 install git+https://github.com/TheRedElement/snnib.git
-```
-
-## Quickstart
+#### Navigation
 1. in `Viewport Display` expand the right side panel (by hitting `n`)
 2. initialization (only needs to be done once right after loading)
     1. run all the operators in the `Actions > Initialization` box in order
@@ -37,8 +52,18 @@ pip3 install git+https://github.com/TheRedElement/snnib.git
 5. **make sure to `Apply Scale` on the `Network Container` (and potentially also the `Template Neuron`)**
 6. hit `Build SNN` to generate your network
 
-## Mappings
+#### Mappings
 * one time-step ($dt$) in a SNN simulation is mapped to a single frame in blender
+
+### Python package
+#### Installation
+* simply install via `pip`
+```bash
+pip3 install git+https://github.com/TheRedElement/snnib.git
+```
+
+for tutorials checkout [tutorials](./tutorials.md)
+
 
 ## Currently supported simulators
 * random network generation
@@ -50,19 +75,6 @@ If you want to compile the add-on yourself (i.e., in case you made some changes 
 ```bash
 bash publish.sh
 ```
-
-## FAQ
-### `Network Container` does not transform to a wireframe when hitting `Build SNN`
-#### Cause 1: Deleted `Geometry Nodes` group
-* most likely you have deleted and re-generated the necessary `Geometry Nodes` group which leads to
-    * `Network Container` still has the `Geometry Nodes` modifier attached but no `node tree` linked anymore
-        * behaves as if no `Geometry Nodes` applied at all
-
-Solution 1:
-> delete the `Geometry Nodes` modifier and hit `Build SNN` again
-Solution 2:
-> copy the nodes from `SnnibNetworkContainer` into the associated `Geometry Nodes` modifier
-
 
 ## TODO:
 - [ ] add example animations to README.md

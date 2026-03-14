@@ -119,7 +119,12 @@ def copy_files(app):
     src = root / "gfx"
     dst = docs / "gfx"
     dst.mkdir(parents=True, exist_ok=True)
-    for f in []:
+    for f in ["snnib_logo.svg"]:
+        shutil.copy2(src / f, dst / f)
+    src = root / "renders"
+    dst = docs / "renders"
+    dst.mkdir(parents=True, exist_ok=True)
+    for f in ["SnnibBrian2Tiny001-0120.gif", "SnnibRandom001-0120.gif"]:
         shutil.copy2(src / f, dst / f)
 
     return
