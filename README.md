@@ -32,6 +32,13 @@
 | :-: | :-: |
 |![](renders/SnnibRandom0001-0120.gif)|![](renders/SnnibBrian2Tiny0001-0120.gif)|
 
+<!-- block -->
+> [!NOTE]
+> you can also render much larger networks depending on your hardware.
+> on a 16GB RAM, 16 core laptop I tested up to 1600 neurons.
+> The main issue you will run into is that there is so much going on, that it is hard to distinguish individual neurons and neurites.
+<!-- block -->
+
 ## Quickstart
 
 > more detailed documentation can be found in the [readthedocs page](https://snnib.readthedocs.io/en/latest/index.html)

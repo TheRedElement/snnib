@@ -585,7 +585,7 @@ def check_stp():
 
     return
 
-def experiment(idx:int=3):
+def experiment(idx:int=-1):
     """runs the experiment as a whole
 
     Parameters
@@ -651,6 +651,14 @@ def experiment(idx:int=3):
             delay1="50 * ms + 80 * ms * rand()",
             delay2="8 * ms + 10 * ms * rand()",
         ),
+        dict(#small
+            setting="small",
+            t_sim=120 * second, dt=10 * ms,
+            N_E=250, N_I=150, n_in=3,
+            C_inE=20, C_EE=2, C_EI=2, C_IE=1, C_II=1,
+            delay1="50 * ms + 80 * ms * rand()",
+            delay2="8 * ms + 10 * ms * rand()",
+        ),        
         dict(#tiny
             setting="tiny",
             t_sim=50 * second, dt=10 * ms,
