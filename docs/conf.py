@@ -124,8 +124,8 @@ def copy_files(app):
     src = root / "renders"
     dst = docs / "renders"
     dst.mkdir(parents=True, exist_ok=True)
-    for f in ["SnnibBrian2Tiny001-0120.gif", "SnnibRandom001-0120.gif"]:
-        shutil.copy2(src / f, dst)
+    for f in ["SnnibBrian2Tiny0001-0120.gif", "SnnibRandom0001-0120.gif"]:
+        shutil.copy2(src / f, dst / f)
 
     return
 #%%sphinx internal functions
