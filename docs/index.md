@@ -5,8 +5,8 @@
 :maxdepth: 2
 :hidden:
 
+pages/*
 ```
-<!-- pages/* -->
 
 <!-- just import README.md (setup as the front-page to have GitHub and readthedocs synched) -->
 ```{include} README.md
