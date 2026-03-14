@@ -1,4 +1,14 @@
-"""
+"""functions for random generation
+
+Exceptions
+
+Classes
+
+Functions
+    - `random_points_bbox()` -- generates random points inside a bounding box
+    - `random_points_raycast()` -- BROKEN; generates random points based on raycasting
+
+Other Objects
 """
 
 #%%imports
@@ -9,7 +19,6 @@ from mathutils.bvhtree import BVHTree
 import numpy as np
 
 import logging
-from typing import List
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -20,7 +29,34 @@ def random_points_bbox(
     Rng:np.random.Generator,
     n:int=1,
     ) -> np.ndarray:
-    """generates `n` random points inside the bounding box of `object`
+    """generates `n` random points inside the bounding box of `obj`
+
+    Parameters
+        - `obj`
+            - `bpy.types.Object`
+            - object to use the bounding box of
+        - `Rng`
+            - `np.random.Generator`
+            - random number generator
+        - `n`
+            - `int`, optional
+            - number of points to generate
+            - the default is `1`
+
+    Raises
+
+    Returns
+        - `coords`
+            - `np.ndarray`
+            - has shape `(n,3)`
+            - randomly generated coordinates
+
+    Dependencies
+        - `bpy`
+        - `mathutils`
+        - `numpy`
+        - `logging`
+        - `typing`
     """
 
     #generate neurons at random locations
@@ -36,7 +72,34 @@ def random_points_raycast(
     Rng:np.random.Generator,
     n:int=1,
     ) -> np.ndarray:
-    """generates a single random point inside `obj`
+    """BROKEN; generates a random points inside `obj`
+    
+    Parameters
+        - `obj`
+            - `bpy.types.Object`
+            - object to use as host
+        - `Rng`
+            - `np.random.Generator`
+            - random number generator
+        - `n`
+            - `int`, optional
+            - number of points to generate
+            - the default is `1`
+
+    Raises
+
+    Returns
+        - `coords`
+            - `np.ndarray`
+            - has shape `(n,3)`
+            - randomly generated coordinates
+
+    Dependencies
+        - `bpy`
+        - `mathutils`
+        - `numpy`
+        - `logging`
+        - `typing`    
     """
 
     def is_point_inside(

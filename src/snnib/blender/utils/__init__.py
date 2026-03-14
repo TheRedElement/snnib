@@ -1,4 +1,13 @@
-"""
+"""utilities to make interacting with blender objects more straightforward
+
+Modules
+- `collection_utils`
+- `geo_nodes_utils`
+- `mesh_utils`
+- `random`
+- `scaling`
+
+Subpackages
 """
 
 #%%imports
