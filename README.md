@@ -19,9 +19,9 @@
 ```
 
 ## Example Renders
-|Imported [brian2](https://briansimulator.org/) network| Randomly Generated Network|
+| Imported [brian2](https://briansimulator.org/) network | Randomly Generated Network|
 | :-: | :-: |
-|![](./renders/SnnibBrian2Tiny0001-0120.gif) | ![](./renders/SnnibRandom0001-0120.gif) |
+|![](renders/SnnibBrian2Tiny0001-0120.gif)|![](renders/SnnibRandom0001-0120.gif)|
 
 ## Quickstart
 
