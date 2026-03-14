@@ -159,6 +159,12 @@ autodoc_default_options = {
 # autoclass_content = "both"
 autosummary_generate = True
 
+#mock imports (creation of dummy packages so import succeeds)
+autodoc_mock_imports = [
+    #`bpy` only exists in blender environment
+    "bpy", "bpy.types", "bpy.props"
+]
+
 #myst_parser extensions
 myst_enable_extensions = [
     "amsmath",
