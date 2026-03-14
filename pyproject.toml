@@ -1,10 +1,10 @@
 [project]
 name = "snnib"
 version = "1.0.0"
-description = "Add your description here"
+description = "blender add-on to visualize spiking neural networks"
 readme = "README.md"
 authors = [
-    { email = "lukas.steinwender99@gmail.com" }
+    { name = "Lukas Steinwender" }
 ]
 requires-python = ">=3.11"
 dependencies = [
@@ -14,9 +14,17 @@ dependencies = [
     "plotly>=6.6.0",
     "pytest>=9.0.2",
 ]
+maintainers = [
+    {name = "Lukas Steinwender"}
+]
+license = {file = "LICENSE"}
+keywords = [ "visualization", "blender", "neural networks",]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
 
 [project.scripts]
-brian2_sim = "snnib:main"
 
 [build-system]
 requires = ["uv_build>=0.8.15,<0.9.0"]
@@ -36,3 +44,9 @@ docs = [
 filterwarnings = [
     "ignore::DeprecationWarning",
 ]
+
+#custom stuff
+[project.urls]
+Homepage = "https://github.com/TheRedElement/snnib"
+Repository = "https://github.com/TheRedElement/snnib"
+Issues = "https://github.com/TheRedElement/snnib/issues"
