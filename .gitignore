@@ -1,5 +1,6 @@
 temp*
 renders/frames
+renders/*.mkv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
