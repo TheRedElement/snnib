@@ -89,7 +89,7 @@ def override_style():
     }
     html_static_path = [
         "_static",
-        "assets",       
+        "assets",
         "gfx",  #also make copied gfx static (for `html_theme_options["logo"]``)
     ]
     html_css_files = ["custom.css"]
@@ -125,7 +125,7 @@ def copy_files(app):
     dst = docs / "renders"
     dst.mkdir(parents=True, exist_ok=True)
     for f in ["SnnibBrian2Tiny001-0120.gif", "SnnibRandom001-0120.gif"]:
-        shutil.copy2(src / f, dst / f)
+        shutil.copy2(src / f, dst)
 
     return
 #%%sphinx internal functions
