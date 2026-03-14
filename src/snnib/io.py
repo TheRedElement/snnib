@@ -19,6 +19,7 @@ import json
 import logging
 
 from . import brian2_utils as snnib_b2u
+from . import scaling
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.WARNING)
@@ -93,21 +94,20 @@ def brian22snnib(
     )
 
     #get synapses
-    synapses_snnib = dict(pre=[], post=[], w=[], w_unit=[])
+    synapses_snnib = dict(pre=[], post=[], w=[])                #NOTE: no w_unit (weights get normalized)
     for sg in sgs:
         synapses_snnib["pre"]       += sg.i[:].tolist()
         synapses_snnib["post"]      += sg.j[:].tolist()
         synapses_snnib["w"]         += np.asarray(sg.w[:]).tolist() #remove unit
-        if isinstance(sg.w[0], brian2.Quantity):
-            synapses_snnib["w_unit"]    += [str(sg.w[0].dimensions)] * sg.i[:].shape[0]
-        else:
-            synapses_snnib["w_unit"]    += [""] * sg.i[:].shape[0]
+
+    #normalize weights
+    synapses_snnib["w"] = scaling.minmaxscale(synapses_snnib["w"])
 
     #reformat
     synapses_snnib = list(zip(*synapses_snnib.values()))   #transpose
 
     #get neurons
-    neurons_snnib = dict(id=[], x=[], y=[], z=[], spiketrain=[], spiketrain_unit=[])
+    neurons_snnib = dict(id=[], x=[], y=[], z=[], spiketrain=[])    #NOTE: no spiketrain_unit needed (indices combined with metadata describe spike times)
     for ng in ngs:
         neurons_snnib["id"] += ng.i[:].tolist()
         
@@ -118,10 +118,8 @@ def brian22snnib(
 
         #get spiketrains
         spiketrains = list(snnib_b2u.get_spike_monitor(net, ng).spike_trains().values())
-        spiketrain_unit = spiketrains[0].dimensions
         spiketrains = [(st / dt).astype(int).tolist() for st in spiketrains]    #convert spiketrains to simulations steps
-        neurons_snnib["spiketrain"]      += spiketrains
-        neurons_snnib["spiketrain_unit"] +=  [str(spiketrain_unit)] * ng.i.shape[0]
+        neurons_snnib["spiketrain"] += spiketrains
 
     neurons_snnib = list(zip(*list(neurons_snnib.values())[1:]))    #transpose #remove ID because encoded in index
     logger.debug(meta)

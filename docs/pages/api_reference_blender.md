@@ -18,6 +18,86 @@
     blender
 ```
 
+### utils
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlender/
+
+    utils
+```
+
+#### collection_utils
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlender/
+
+    utils.collection_utils
+    utils.collection_utils.ensure_collection
+    utils.collection_utils.clear_collection
+    utils.collection_utils.obj_unlink_all_collections
+```
+#### geo_nodes_utils
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlender/
+    
+    utils.geo_nodes_utils
+    utils.geo_nodes_utils.add_todo_node
+    utils.geo_nodes_utils.copy_geonodes
+    utils.geo_nodes_utils.clear_node_group
+    utils.geo_nodes_utils.create_node_group
+    utils.geo_nodes_utils.delete_geonode_groups
+    utils.geo_nodes_utils.exists_node_group
+    utils.geo_nodes_utils.get_node_by_label
+    utils.geo_nodes_utils.set_node_curve
+
+    utils.mesh_utils.add_spline2data
+    utils.mesh_utils.apply_rotation
+    utils.mesh_utils.get_bbox
+
+    utils.random.random_points_bbox
+    utils.random.random_points_raycast
+```
+
+#### mesh_utils
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlender/
+    
+    utils.mesh_utils
+    utils.mesh_utils.add_spline2data
+    utils.mesh_utils.apply_rotation
+    utils.mesh_utils.get_bbox
+
+    utils.random.random_points_bbox
+    utils.random.random_points_raycast
+```
+
+#### random
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlender/
+    
+    utils.random
+    utils.random.random_points_bbox
+    utils.random.random_points_raycast
+```
+
+
 ### geo_nodes
 ```{eval-rst}
 .. autosummary::
@@ -39,7 +119,7 @@
 
 ```
 
-## network
+### network
 
 ```{eval-rst}
 .. autosummary::
@@ -76,7 +156,7 @@
     network.generate_template_neuron
 ```
 
-## operators
+### operators
 
 ```{eval-rst}
 .. autosummary::
@@ -96,7 +176,7 @@
 
 ```
 
-## panels
+### panels
 
 ```{eval-rst}
 .. autosummary::
@@ -108,7 +188,7 @@
     panels.SNNIB_PT_Panel
 ```
 
-## properties
+### properties
 
 ```{eval-rst}
 .. autosummary::
@@ -120,7 +200,7 @@
     properties.SnnibProperties
 ```
 
-## shader nodes
+### shader nodes
 
 ```{eval-rst}
 .. autosummary::
@@ -131,7 +211,8 @@
     shader_nodes
     shader_nodes.spiking_neuron
 ```
-## spiketrain
+
+### spiketrain
 
 ```{eval-rst}
 .. autosummary::

@@ -596,8 +596,9 @@ def experiment(idx:int=-1):
                 - `0`: "default"
                 - `1`: "optimized" (huge)
                 - `2`: "medium"
-                - `3`: "tiny"
-            - the default is `3`
+                - `3`: "small"
+                - `4`: "tiny"
+            - the default is `-1`
 
     Raises
 

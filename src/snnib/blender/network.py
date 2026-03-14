@@ -25,8 +25,9 @@ import numpy as np
 from typing import List
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
+from snnib import scaling
 from . import utils
 from . import spiketrain
 
@@ -260,7 +261,7 @@ class Network:
             
             #read and adjust coordinates to bbox
             coords = np.array([[n[0],n[1],n[2]] for n in data["neurons"]])
-            coords = utils.scaling.minmaxscale(coords, bb_min, bb_max, axis=0)
+            coords = scaling.minmaxscale(coords, bb_min, bb_max, axis=0)
             self.neurons = [dict(
                 coords=coords[nidx],
                 spiketrain=set(np.round(n[3],0).astype(int)))
@@ -287,6 +288,8 @@ class Network:
 
         Returns
         """
+
+        logger.info(f"setting up network container")
 
         #initial cleanup
         logger.warning(f"clearing children of network container")
@@ -318,6 +321,7 @@ class Network:
 
         Returns        
         """
+        logger.info(f"drawing {self.n_neurons} neurons")
 
         #generating instances
         for n in range(self.n_neurons):
@@ -411,6 +415,8 @@ class Network:
 
         Returns           
         """
+
+        logger.info(f"drawing {self.n_synapses} synapses")
 
         #create synapses (additional splines appended to axon that connect to postsynaptic neuron)
         for s in range(self.n_synapses):

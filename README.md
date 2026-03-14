@@ -28,9 +28,12 @@
 ```
 
 ## Example Renders
-| Randomly Generated Network | Imported [brian2](https://briansimulator.org/) network |
+|||
 | :-: | :-: |
 |![](renders/SnnibRandom0001-0120.gif)|![](renders/SnnibBrian2Tiny0001-0120.gif)|
+| Randomly Generated Network | Imported [brian2](https://briansimulator.org/) network ([source](./data/brian2_tiny.json))|
+|![](renders/SnnibBrian2Small0001-0120.gif)||
+|Imported [brian2](https://briansimulator.org/) network (400 neurons, 1260 synapses, [source](./data/brian2_small.json)) | |
 
 <!-- block -->
 > [!NOTE]
@@ -45,7 +48,7 @@
 
 ### Add-on
 #### Installation
-1. download [snnib.zip](./snnib.zip)
+1. download [releases/snnib.zip](https://github.com/TheRedElement/snnib/raw/refs/heads/main/snnib.zip)
 2. in [blender](https://blender.org/)
     1. navigate to `Edit > Preferences > Add-ons`
     2. drag and drop the downloaded file ([snnib.zip](./snnib.zip)) into the window

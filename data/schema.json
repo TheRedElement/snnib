@@ -1,0 +1,105 @@
+{
+    "$schema": {
+        "meta": {
+            "description": [
+                "dict",
+                "metadata of the original simulation"
+            ],
+            "t_sim": [
+                "float",
+                "total simulation duration"
+            ],
+            "t_sim_unit": [
+                "str",
+                "unit of `t_sim`",
+                "can also be dimensionless"
+            ],
+            "dt": [
+                "float",
+                "time step of the simulation"
+            ],
+            "dt_unit": [
+                "str",
+                "unit of `dt`",
+                "has to be the same as `t_sim_unit`"
+            ],
+            "steps": [
+                "int",
+                "total number of steps in the simulation",
+                "maps to the number of frames in blender",
+                "equivalent to `t_sim`/`dt`"
+            ]
+        },
+        "neurons": {
+            "description": [
+                "list[list]",
+                "list of neurons to be plotted",
+                "each entry represents a single neuron"
+            ],
+            "neurons (entries)": {
+                "x": [
+                    "float",
+                    "x-coordinate of the neuron position",
+                    "will be mapped to match the bounding box of the network container"
+                ],
+                "y": [
+                    "float",
+                    "y-coordinate of the neuron position",
+                    "will be mapped to match the bounding box of the network container"
+                ],
+                "z": [
+                    "float",
+                    "z-coordinate of the neuron position",
+                    "will be mapped to match the bounding box of the network container"
+                ],
+                "spiketrain": [
+                    "list[int]",
+                    "indices defining at which step the neuron emitted a spike",
+                    "relative to `steps`"
+                ]
+            }
+        },
+        "synapses": {
+            "description": [
+                "list[list]",
+                "list of synapses in the network",
+                "each entry represents a single connection between neurons"
+            ],
+            "synapses (entries)": {
+                "pre_idx": [
+                    "int",
+                    "index of pre-synaptic neuron",
+                    "origin of the connection"
+                ],
+                "post_idx": [
+                    "int",
+                    "index of post-synaptic neuron",
+                    "target of the connection"
+                ],
+                "w": [
+                    "float",
+                    "synapse weight",
+                    "ideally normalized"
+                ]
+            }
+        }
+    },
+    "meta": {
+        "t_sim": 50.0,
+        "t_sim_unit": "s",
+        "dt": 0.01,
+        "dt_unit": "s",
+        "steps": 5000
+    },
+    "neurons": [
+        [0,0,0,[0,1,2,3,4]],
+        [0,1,0,[0,1,2,3,4]],
+        [1,1,0,[5,6,7,8,9]],
+        "more neurons..."
+    ],
+    "synapses": [
+        [0,2,0.5],   
+        [1,2,0.2],
+        "... more synapses"
+    ]
+}

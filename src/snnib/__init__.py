@@ -10,6 +10,7 @@
 Modules
 - `brian2_utils`
 - `io`
+- `scaling`
 
 Subpackages
 - `blender` -- [blender](https://www.blender.org/) add-on; only available from within [blender](https://www.blender.org/)

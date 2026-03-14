@@ -22,7 +22,7 @@ import bpy
 import logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG, force=True)
+logging.basicConfig(level=logging.INFO, force=True)
 
 from . import network
 from . import DEV
