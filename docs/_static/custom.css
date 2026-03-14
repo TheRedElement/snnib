@@ -1,0 +1,79 @@
+/* overrides alabaster (https://github.com/sphinx-doc/alabaster/blob/master/alabaster/static/alabaster.css_t) */
+/* @import 'alabaster.css_t'; */
+
+:root {
+    --c_bg: #000000;
+    --c_body_text: #ffffff;
+    --c_link: #c80000;
+    --c_hover: #c94242;
+    --c_visited: #a10000;
+    --c_code_bg: #414141;
+}
+
+/* base */
+body {
+  background: var(--c_bg);
+  color: var(--c_body_text);   /* make text readable */
+}
+
+/* main parts */
+div.document {
+  background-color: var(--c_bg);
+}
+div.body {
+  background-color: var(--c_bg);
+}
+:where(h1,h2,h3,h4,h5,h6) {
+    color: var(--c_body_text);
+}
+
+div.footer {
+    color: var(--c_body_text);
+}
+
+div.footer a {
+    color: var(--c_body_text);
+}
+
+/* sphinx */
+div.sphinxsidebar {
+  background-color: var(--c_bg);
+  color: var(--c_body_text);
+}
+div.sphinxsidebar :where(h1,h2,h3,h4,h5,h6) {
+  background-color: var(--c_bg);
+  color: var(--c_body_text);
+}
+div.sphinxsidebar p {
+    color: var(--c_body_text);
+}
+div.sphinxsidebar ul {
+    color: var(--c_body_text);
+}
+div.sphinxsidebar hr {
+    color: var(--c_body_text);
+}
+
+/* links */
+a {
+    color: var(--c_link);
+}
+a:hover {
+    color: var(--c_hover);
+}
+a:visited {
+    color: var(--c_visited);
+}
+
+a.headerlink {
+    color: var(--c_link);
+}
+a.headerlink:hover {
+    color: var(--c_hover);
+}
+
+/* sphinx overrides */
+dt.sig {
+    /* object signatures */
+    background-color: var(--c_code_bg);
+}

@@ -10,9 +10,22 @@
 - [ ] readthedocs
 - [ ] save function (to store network randomly generated with `snnib`)
 
+## Installation
+### Add-on
+1. download [snnib.zip](./snnib.zip)
+2. in [blender](https://blender.org/)
+    1. navigate to `Edit > Preferences > Add-ons`
+    2. drag and drop the downloaded file ([snnib.zip](./snnib.zip)) into the window
+    3. click `OK`
+
+### Python package
+* simply install via `pip`
+```bash
+pip3 install git+https://github.com/TheRedElement/snnib.git
+```
 
 ## Quickstart
-1. in `Viewport Display` expand the right side panel (`Ctrl+n`)
+1. in `Viewport Display` expand the right side panel (by hitting `n`)
 2. initialization (only needs to be done once right after loading)
     1. run all the operators in the `Actions > Initialization` box in order
         1. done by clicking the respective buttons
