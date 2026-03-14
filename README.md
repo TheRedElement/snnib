@@ -10,13 +10,10 @@
 
 <!-- block -->
 > [!NOTE]
-> This page summarizes a basic rundown of `SNNIB`.
-> In principle `SNNIB` can be used like any other blender add-on
+> this add-on consists of two parts:
+> the blender add-on;
+> a python package used create files compatible with `SNNIB`;
 <!-- block -->
-
-* this add-on consists of two parts
-    * a python package used create files compatible with `SNNIB`
-    * the blender add-on
 
 * if you find this add-on useful in your work, an acknowledgement would be appreciated:
 ```latex

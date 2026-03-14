@@ -293,14 +293,10 @@ class Network:
         for child in self.network_container.children_recursive:
             bpy.data.objects.remove(child, do_unlink=True)          
 
-        #add geonodes
-        gn = self.network_container.modifiers.new(name="Network.Container", type='NODES')
-        gn.node_group = bpy.data.node_groups["SnnibNetworkContainer"]
-        
-        # #add geonodes (if none existent)
-        # if len([mod for mod in self.network_container.modifiers if mod.type=='NODES']) == 0:
-        #     gn = self.network_container.modifiers.new(name="Network.Container", type='NODES')
-        #     gn.node_group = bpy.data.node_groups["SnnibNetworkContainer"]
+        #add geonodes (if none existent)
+        if len([mod for mod in self.network_container.modifiers if mod.type=='NODES']) == 0:
+            gn = self.network_container.modifiers.new(name="Network.Container", type='NODES')
+            gn.node_group = bpy.data.node_groups["SnnibNetworkContainer"]
         
         #other settings
         self.network_container.hide_render = True

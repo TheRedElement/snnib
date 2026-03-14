@@ -6,7 +6,7 @@
     * `Network Container` still has the `Geometry Nodes` modifier attached but no `node tree` linked anymore
         * behaves as if no `Geometry Nodes` applied at all
 
-Solution 1:
-> delete the `Geometry Nodes` modifier and hit `Build SNN` again
-Solution 2:
+#### Solution 1:
+> delete all the `Geometry Nodes` modifiers and hit `Build SNN` again
+#### Solution 2:
 > copy the nodes from `SnnibNetworkContainer` into the associated `Geometry Nodes` modifier

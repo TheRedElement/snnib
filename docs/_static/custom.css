@@ -77,3 +77,6 @@ dt.sig {
     /* object signatures */
     background-color: var(--c_code_bg);
 }
+h2 code {
+    color: #ffffff;
+}
