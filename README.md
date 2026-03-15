@@ -31,9 +31,9 @@
 |||
 | :-: | :-: |
 |![](renders/SnnibRandom0001-0120.gif)|![](renders/SnnibBrian2Tiny0001-0120.gif)|
-| Randomly Generated Network | Imported [brian2](https://briansimulator.org/) network ([source](https://github.com/TheRedElement/snnib/raw/refs/heads/main/data/brian2_tiny.json))|
+| randomly generated network | imported [brian2](https://briansimulator.org/) network ([source](https://github.com/TheRedElement/snnib/raw/refs/heads/main/data/brian2_tiny.json))|
 |![](renders/SnnibBrian2Small0001-0120.gif)||
-|Imported [brian2](https://briansimulator.org/) network (400 neurons, 1260 synapses, [source](https://github.com/TheRedElement/snnib/raw/refs/heads/main/data/brian2_small.json)) | |
+|imported [brian2](https://briansimulator.org/) network (400 neurons, 1260 synapses, [source](https://github.com/TheRedElement/snnib/raw/refs/heads/main/data/brian2_small.json)) | |
 
 <!-- block -->
 > [!NOTE]
@@ -55,6 +55,12 @@
     3. click `OK`
 
 #### Navigation
+
+||||
+|:-:|:-:|:-:|
+|![](./gfx/SnnibTutorialUiRandom.gif)|![](./gfx/SnnibTutorialFromFile.gif)|![](./gfx/SnnibTutorialGeoNodes.gif)|
+|generating random network|loading network from file|control using geometry nodes|
+
 1. in `Viewport Display` expand the right side panel (by hitting `n`)
 2. initialization (only needs to be done once right after loading)
     1. run all the operators in the `Actions > Initialization` box in order
@@ -95,7 +101,9 @@ If you want to compile the add-on yourself (i.e., in case you made some changes 
 bash publish.sh
 ```
 
+## Known Restrictions
+* because a lot of geometry is generated when building a large network, `crtl + z` will likely fail
+
 ## TODO:
-- [ ] example animations to README.md
-    - large brian2 network
+- [ ] geo nodes node trees and shader nodes node trees do not persist when reloading the `.blend` file
 - [ ] save function (to store network randomly generated with `snnib`)
