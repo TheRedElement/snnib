@@ -19,7 +19,7 @@
 ```latex
 @software{PY_Steinwender2026_snnib,
 	author    = {{Steinwender}, Lukas},
-	title     = {SNNIB: Spiking Neural Network Into Blender},
+	title     = {SNNIB: Spiking Neural Networks Into Blender},
 	month     = Mar,
 	year      = 2026,
 	version   = {latest},
