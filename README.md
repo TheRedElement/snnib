@@ -55,11 +55,7 @@
     3. click `OK`
 
 #### Navigation
-
-||||
-|:-:|:-:|:-:|
-|![](./gfx/SnnibTutorialUiRandom.gif)|![](./gfx/SnnibTutorialFromFile.gif)|![](./gfx/SnnibTutorialGeoNodes.gif)|
-|generating random network|loading network from file|control using geometry nodes|
+> see [Video Tutorials](#video-tutorials) for screen recordings
 
 1. in `Viewport Display` expand the right side panel (by hitting `n`)
 2. initialization (only needs to be done once right after loading)
@@ -107,3 +103,12 @@ bash publish.sh
 ## TODO:
 - [ ] geo nodes node trees and shader nodes node trees do not persist when reloading the `.blend` file
 - [ ] save function (to store network randomly generated with `snnib`)
+
+
+## Video Tutorials
+generating random network
+![](./gfx/SnnibTutorialUiRandom.gif)
+loading network from file
+![](./gfx/SnnibTutorialFromFile.gif)
+control using geometry nodes
+![](./gfx/SnnibTutorialGeoNodes.gif)
