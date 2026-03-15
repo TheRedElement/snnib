@@ -79,5 +79,5 @@ dt.sig {
 }
 code {
     /* background-color: var(--c_code_bg); */
-    color: var(--c_body_text);
+    /* color: var(--c_body_text); */
 }
