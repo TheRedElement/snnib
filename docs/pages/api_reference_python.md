@@ -7,7 +7,6 @@
 .. currentmodule:: snnib
 ```
 
-## snnib
 ```{eval-rst}
 .. autosummary::
     :signatures: short
@@ -17,7 +16,7 @@
     snnib
 ```
 
-### snnib.simulations
+## simulations
 
 ```{eval-rst}
 .. autosummary::
@@ -27,6 +26,8 @@
 
     simulations
 ```
+
+* see []
 
 #### brian2_simulations
 ```{eval-rst}

@@ -1,38 +1,97 @@
 <!-- NOTE: :recursive: -> show all children as well (to display all methods when summarizing class) -->
 
 
-# API Reference (Blender Add-On)
+# API Reference (Blender.Utils)
 
 ```{eval-rst}
-.. currentmodule:: snnib.blender
+.. currentmodule:: snnib.blender.utils
 ```
 
 ```{eval-rst}
 .. autosummary::
     :signatures: short
     :recursive:
-    :toctree: tocBlender/
-
-    blender
-```
-
-## utils
-```{eval-rst}
-.. autosummary::
-    :signatures: short
-    :recursive:
-    :toctree: tocBlender/
+    :toctree: tocBlenderUtils/
 
     utils
 ```
-* see [API Reference (Blender Utils)](./api_reference_blender_utils.md) for details
+
+## collection_utils
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlenderUtils/
+
+    utils.collection_utils
+    utils.collection_utils.ensure_collection
+    utils.collection_utils.clear_collection
+    utils.collection_utils.obj_unlink_all_collections
+```
+## geo_nodes_utils
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlenderUtils/
+    
+    utils.geo_nodes_utils
+    utils.geo_nodes_utils.add_todo_node
+    utils.geo_nodes_utils.copy_geonodes
+    utils.geo_nodes_utils.clear_node_group
+    utils.geo_nodes_utils.create_node_group
+    utils.geo_nodes_utils.delete_geonode_groups
+    utils.geo_nodes_utils.exists_node_group
+    utils.geo_nodes_utils.get_node_by_label
+    utils.geo_nodes_utils.set_node_curve
+
+    utils.mesh_utils.add_spline2data
+    utils.mesh_utils.apply_rotation
+    utils.mesh_utils.get_bbox
+
+    utils.random.random_points_bbox
+    utils.random.random_points_raycast
+```
+
+## mesh_utils
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlenderUtils/
+    
+    utils.mesh_utils
+    utils.mesh_utils.add_spline2data
+    utils.mesh_utils.apply_rotation
+    utils.mesh_utils.get_bbox
+
+    utils.random.random_points_bbox
+    utils.random.random_points_raycast
+```
+
+## random
+
+```{eval-rst}
+.. autosummary::
+    :signatures: short
+    :recursive:
+    :toctree: tocBlenderUtils/
+    
+    utils.random
+    utils.random.random_points_bbox
+    utils.random.random_points_raycast
+```
+
 
 ## geo_nodes
 ```{eval-rst}
 .. autosummary::
     :signatures: short
     :recursive:
-    :toctree: tocBlender/
+    :toctree: tocBlenderUtils/
 
     geo_nodes
     geo_nodes.network_container
@@ -54,7 +113,7 @@
 .. autosummary::
     :signatures: short
     :recursive:
-    :toctree: tocBlender/
+    :toctree: tocBlenderUtils/
 
     network
 ```
@@ -63,7 +122,7 @@
 .. autosummary::
     :signatures: short
     :recursive:
-    :toctree: tocBlender/
+    :toctree: tocBlenderUtils/
 
     network
     network.Network
@@ -80,7 +139,7 @@
 .. autosummary::
     :signatures: short
     :recursive:
-    :toctree: tocBlender/
+    :toctree: tocBlenderUtils/
 
     network.generate_template_neuron
 ```
