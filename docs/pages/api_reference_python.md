@@ -27,7 +27,7 @@
     simulations
 ```
 
-* see []
+* see [API Reference (Python.Simulations)](./api_reference_python_simulations.md) for details
 
 #### brian2_simulations
 ```{eval-rst}
